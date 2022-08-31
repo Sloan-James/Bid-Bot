@@ -2,7 +2,8 @@ import discord, asyncio
 from discord import app_commands
 import random
 import string
-
+from requests_html import HTML
+import requests
 
 
 class Bids:
@@ -74,6 +75,8 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 async def startbids(interaction: discord.Interaction, item: str):
   if interaction.channel_id != 1005993249565048893: return
 
+  
+
   global biddingOpen
   global auctions
   biddingOpen = 'OPEN'
@@ -87,11 +90,14 @@ async def startbids(interaction: discord.Interaction, item: str):
   auctions.update({z:Bids()})
   auctions.get(z).itemName = item
 
-  
-  await interaction.response.send_message("**" + item + "**\n" + 
-                                          '> https://eq.magelo.com/items?q=' + replaceSpaces +
-                                         '\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n' +
-                                         '`/bid id:' + z + ' price: `\n')
+  link = "https://lucy.allakhazam.com/itemlist.html?searchtext=" + replaceSpaces
+
+
+  embed = discord.Embed(title = "**" + item + "**", url=link, description = ">>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + '**/bid id:' + z + ' price: **\n')
+
+  await interaction.response.send_message("**" + item + "**", embed=embed)
+
+
 
 
 #Ending Bids
