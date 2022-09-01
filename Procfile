@@ -1,1 +1,1 @@
-web: python AuctionBot.py
+web: python AuctionBot.py runserver 0.0.0.0:5000
