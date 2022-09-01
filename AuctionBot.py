@@ -37,6 +37,7 @@ client = aclient()
 tree = app_commands.CommandTree(client)
 
 
+
 # Place a Bid
 @tree.command(
   name = "bid",
