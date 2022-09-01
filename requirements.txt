@@ -1,0 +1,2 @@
+discord-ext-alternatives
+discord
