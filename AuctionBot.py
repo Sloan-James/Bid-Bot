@@ -3,6 +3,12 @@ from discord import app_commands
 import random
 import string
 
+#Testing
+import requests
+import html2text
+from bs4 import BeautifulSoup
+#Testing End
+
 
 class Bids:
   def __init__(self):
@@ -11,7 +17,8 @@ class Bids:
     self.itemBidders = []
 
 global guildID
-guildID = 1005697782859960350
+guildID = 1007067815280398357
+channelID = 1013982148132343841
 
 class aclient(discord.Client):
   def __init__(self):
@@ -44,7 +51,7 @@ tree = app_commands.CommandTree(client)
 )
 @discord.app_commands.checks.has_any_role("Leadership", "Member")
 async def bid(interaction: discord.Interaction, id: str, price: int):
-  if interaction.channel_id != 1005993249565048893: return
+  if interaction.channel_id != channelID: return
 
   global auctions
   if id in auctions:
@@ -72,7 +79,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 )
 @discord.app_commands.checks.has_any_role("Leadership", "Member")
 async def bid(interaction: discord.Interaction):
-  if interaction.channel_id != 1005993249565048893: return
+  if interaction.channel_id != channelID: return
 
   global auctions
 
@@ -96,7 +103,7 @@ async def bid(interaction: discord.Interaction):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def startbids(interaction: discord.Interaction, item: str):
-  if interaction.channel_id != 1005993249565048893: return
+  if interaction.channel_id != channelID: return
 
 
   global biddingOpen
@@ -114,8 +121,43 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   link = "https://lucy.allakhazam.com/itemlist.html?searchtext=" + replaceSpaces
 
+#Testing
+  formatedItem = ''
+  
+  url = "https://eq.magelo.com/quick_search.jspa?keyword=" + replaceSpaces
+  headers = {'accept': 'application/xml;q=0.9, */*;q=0.8'}
+  response = requests.get(url, headers=headers)
 
-  embed = discord.Embed(title = "**" + item + "**", url=link, description = ">>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + '**/bid id:' + z + ' price: **\n')
+  if response.status_code != 404:
+    test = response.text.find('/item/')
+    if test != -1:
+      test2 = response.text[test:test+20].split('"')
+      test3 = test2[0].split('/')
+      url = "https://eq.magelo.com/item/" + test3[2]
+      #url = "https://lucy.allakhazam.com/itemraw.html?id=" + test3[2]
+      response = requests.get(url, headers=headers)
+      if response.status_code != 404:
+
+        thing = BeautifulSoup(response.text)
+        txt = thing.find('div', {'class' : 'body'})
+        testing = txt.get_text('\n').split('\n')
+        
+        formatedItem = testing[1] + '\n' + testing[2] + '\n' + testing[3] + testing[4] + '\n' + testing[5] + testing[6] + '\n' + testing[7] + '\n\n' + testing[8] + '\t' + testing[9] + ' '
+
+
+        i = 10
+        while i < len(testing) - 2:
+          if testing[i][0].isalpha():
+            formatedItem = formatedItem + testing[i] + ' '
+          else:
+            formatedItem = formatedItem + testing[i] + '\n'
+          i = i + 1
+
+
+#Testing End
+
+
+  embed = discord.Embed(title = "**" + item + "**", url=link, description = formatedItem + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + '**/bid id:' + z + ' price: **\n')
 
   await interaction.response.send_message("**" + item + "**", embed=embed)
 
@@ -130,7 +172,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endbids(interaction: discord.Interaction):
-  if interaction.channel_id != 1005993249565048893: return
+  if interaction.channel_id != channelID: return
 
   global auctions
         
@@ -194,7 +236,7 @@ async def endbids(interaction: discord.Interaction):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endbid(interaction: discord.Interaction, id:str):
-  if interaction.channel_id != 1005993249565048893: return
+  if interaction.channel_id != channelID: return
 
   global auctions
 
