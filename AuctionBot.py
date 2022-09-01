@@ -2,8 +2,6 @@ import discord, asyncio
 from discord import app_commands
 import random
 import string
-from requests_html import HTML
-import requests
 
 
 class Bids:
