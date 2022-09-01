@@ -65,6 +65,30 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 
 
 
+# List active bids
+@tree.command(
+  name = "activebids",
+  description = "List the currently active bids",
+  guild = discord.Object(id=guildID)
+)
+@discord.app_commands.checks.has_any_role("Leadership", "Member")
+async def bid(interaction: discord.Interaction):
+  if interaction.channel_id != 1005993249565048893: return
+
+  global auctions
+
+  activeBids = ""
+
+  if auctions == {}:
+    await interaction.response.send_message("There are no active Bids", ephemeral=True)
+  else:
+    for x, y in auctions.items():
+      activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
+
+  await interaction.response.send_message(activeBids, ephemeral=True)
+    
+
+
 # Start bids
 @tree.command(
   name = "startbids",
@@ -75,7 +99,6 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 async def startbids(interaction: discord.Interaction, item: str):
   if interaction.channel_id != 1005993249565048893: return
 
-  
 
   global biddingOpen
   global auctions
@@ -130,7 +153,6 @@ async def endbids(interaction: discord.Interaction):
       prevHighest = 0
       prevBid = 0
       
-      print(i.itemBids)
       if i.itemBids != []:
         for l in i.itemBids:
           if l > highestBid:
@@ -145,24 +167,78 @@ async def endbids(interaction: discord.Interaction):
               
           count = count + 1  
       else:
-        await interaction.followup.send("No one bid on " + i.itemName + ".")
+        await interaction.followup.send("No one bid on **" + i.itemName + "**.")
         continue
         
         
           
       winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1])
-  
+      
+      await interaction.user.send('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
+
     for p in winners: 
       await interaction.followup.send("**" + p[0] + "** won by **" + p[1] + "** for **" + str(p[2]) + "** platinum")
   
-    await interaction.user.send('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids)) 
-    print('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
+       
 
     biddingOpen = 'CLOSED'
     auctions = {}
     del winners
       
 
+
+#End Bid on specific Item
+@tree.command(
+  name = "endbid",
+  description = "End Bid on item with id",
+  guild = discord.Object(id=guildID)
+)
+@discord.app_commands.checks.has_role("Leadership")
+async def endbid(interaction: discord.Interaction, id:str):
+  if interaction.channel_id != 1005993249565048893: return
+
+  global auctions
+
+  currentTopBid = 0        
+
+  if id not in auctions:
+    await interaction.response.send_message("There are no active Bid with that ID")
+  else:
+    await interaction.response.defer()
+    await asyncio.sleep(2)
+
+    winners = []
+    
+               
+    
+    currentTopBid = 0
+    highestBid = 0
+    count = 0
+    prevHighest = 0
+    prevBid = 0
+    
+    if auctions[id].itemBids != []:
+      for l in auctions[id].itemBids:
+        if l > highestBid:
+          prevHighest = highestBid
+          highestBid = l
+          currentTopBid = count
+          
+        else:
+          prevBid = prevHighest
+          if (l > prevBid):
+            prevHighest = l
+            
+        count = count + 1  
+    else:
+      await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
+  
+   
+    await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **" + str(prevHighest + 1) + "** platinum")
+  
+    await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
+
+    del auctions[id]
 
 
 client.run('MTAxNDQzNDg1NTMzOTE3NTk0Ng.GQ5184.6GDsYYSMfvjRQePSQi_eYuJFYOi2C1MxVYR57k')
