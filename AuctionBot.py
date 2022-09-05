@@ -17,8 +17,8 @@ class Bids:
     self.itemBidders = []
 
 global guildID
-guildID = 1007067815280398357
-channelID = 1013982148132343841
+guildID = 1005697782859960350
+channelID = 1005993249565048893
 
 class aclient(discord.Client):
   def __init__(self):
