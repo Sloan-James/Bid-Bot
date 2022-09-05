@@ -2,7 +2,7 @@ import discord, asyncio
 from discord import app_commands
 import random
 import string
-from passwords import DISCORD_TOKEN
+from passwords import DISCORD_TOKEN, GUILD_ID, CHANNEL_ID
 
 
 #Testing
@@ -19,8 +19,8 @@ class Bids:
     self.itemBidders = []
 
 global guildID
-guildID = 1005697782859960350
-channelID = 1005993249565048893
+guildID = GUILD_ID
+channelID = CHANNEL_ID
 
 class aclient(discord.Client):
   def __init__(self):
