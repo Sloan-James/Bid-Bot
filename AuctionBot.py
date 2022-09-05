@@ -2,6 +2,8 @@ import discord, asyncio
 from discord import app_commands
 import random
 import string
+from passwords import DISCORD_TOKEN
+
 
 #Testing
 import requests
@@ -282,4 +284,4 @@ async def endbid(interaction: discord.Interaction, id:str):
     del auctions[id]
 
 
-client.run('MTAxNDQzNDg1NTMzOTE3NTk0Ng.GQ5184.6GDsYYSMfvjRQePSQi_eYuJFYOi2C1MxVYR57k')
+client.run(DISCORD_TOKEN)
