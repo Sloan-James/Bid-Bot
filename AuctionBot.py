@@ -140,7 +140,7 @@ async def startbids(interaction: discord.Interaction, item: str):
       response = requests.get(url, headers=headers)
       if response.status_code != 404:
 
-        thing = BeautifulSoup(response.text)
+        thing = BeautifulSoup(response.text, features="lxml")
         txt = thing.find('div', {'class' : 'body'})
         testing = txt.get_text('\n').split('\n')
         
