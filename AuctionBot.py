@@ -10,7 +10,8 @@ from passwords import DISCORD_TOKEN, GUILD_ID, CHANNEL_ID
 import requests
 import html2text
 from bs4 import BeautifulSoup
-#from selenium import webdriver
+import lxml, lxml.html
+import re
 #Testing End
 
 
@@ -46,7 +47,11 @@ class aclient(discord.Client):
 client = aclient()
 tree = app_commands.CommandTree(client)
 
+CLEANR = re.compile('<.*?>')
 
+def cleanhtml(raw_html):
+  cleantext = re.sub(CLEANR, '', raw_html)
+  return cleantext
 
 # Place a Bid
 @tree.command(
@@ -135,33 +140,38 @@ async def startbids(interaction: discord.Interaction, item: str):
   url = "https://eq.magelo.com/quick_search.jspa?keyword=" + replaceSpaces
   headers = {'accept': 'application/xml;q=0.9, */*;q=0.8'}
   response = requests.get(url, headers=headers)
+  itemStats = ''
 
   if response.status_code != 404:
     test = response.text.find('/item/')
     if test != -1:
       test2 = response.text[test:test+20].split('"')
       test3 = test2[0].split('/')
-      url = "https://eq.magelo.com/item/" + test3[2]
-      #url = "https://lucy.allakhazam.com/itemraw.html?id=" + test3[2]
-      response = requests.get(url, headers=headers)
-      #driver = webdriver.Chrome()
-      #driver.get(url)
+      #url = "https://eq.magelo.com/item/" + test3[2]
+      url = "https://lucy.allakhazam.com/item.html?id=" + test3[2]
+      s = requests.Session()
+      s.post(url)
+
+      response = s.get(url)
+      #print(response.text)
       if response.status_code != 404:
-
         thing = BeautifulSoup(response.text, features="lxml")
-        txt = thing.find('div', {'class' : 'body'})
-        testing = txt.get_text('\n').split('\n')
+        #txt = thing.find('div', {'class' : 'body'})
+        txt = thing.find('table', {"class" : 'eqitem'})
+        itemStats = txt.get_text()
+        #testing = txt.get_text('\n').split('\n')
         
-        formatedItem = testing[1] + '\n' + testing[2] + '\n' + testing[3] + testing[4] + '\n' + testing[5] + testing[6] + '\n' + testing[7] + '\n\n' + testing[8] + '\t' + testing[9] + ' '
+        #print(txt.get_text())
+        #formatedItem = testing[1] + '\n' + testing[2] + '\n' + testing[3] + testing[4] + '\n' + testing[5] + testing[6] + '\n' + testing[7] + '\n\n' + testing[8] + '\t' + testing[9] + ' '
 
 
-        i = 10
-        while i < len(testing) - 2:
-          if testing[i][0].isalpha():
-            formatedItem = formatedItem + testing[i] + ' '
-          else:
-            formatedItem = formatedItem + testing[i] + '\n'
-          i = i + 1
+        #i = 10
+        #while i < len(testing) - 2:
+        #  if testing[i][0].isalpha():
+        #    formatedItem = formatedItem + testing[i] + ' '
+         # else:
+        #    formatedItem = formatedItem + testing[i] + '\n'
+        #  i = i + 1
 
   bidCommand = '**/bid id:' + z + ' price: **'
 
@@ -170,7 +180,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 #Testing End
   
 
-  embed = discord.Embed(title = "**" + item + "**", url=link, description = formatedItem + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
+  embed = discord.Embed(title = "**" + item + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
   await interaction.followup.send("**" + item + "**", embed=embed)
 
