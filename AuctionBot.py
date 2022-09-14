@@ -5,10 +5,12 @@ import string
 from passwords import DISCORD_TOKEN, GUILD_ID, CHANNEL_ID
 
 
+
 #Testing
 import requests
 import html2text
 from bs4 import BeautifulSoup
+#from selenium import webdriver
 #Testing End
 
 
@@ -35,6 +37,7 @@ class aclient(discord.Client):
       global auctions 
       global biddingOpen
       global memberList
+      global bidCommand
       auctions = {}
       biddingOpen = 'CLOSED'
       
@@ -107,9 +110,12 @@ async def bid(interaction: discord.Interaction):
 async def startbids(interaction: discord.Interaction, item: str):
   if interaction.channel_id != channelID: return
 
+  await interaction.response.defer()
+  await asyncio.sleep(1)
 
   global biddingOpen
   global auctions
+
   biddingOpen = 'OPEN'
   ch1 = '%20'
   ch2 = '%27'
@@ -138,6 +144,8 @@ async def startbids(interaction: discord.Interaction, item: str):
       url = "https://eq.magelo.com/item/" + test3[2]
       #url = "https://lucy.allakhazam.com/itemraw.html?id=" + test3[2]
       response = requests.get(url, headers=headers)
+      #driver = webdriver.Chrome()
+      #driver.get(url)
       if response.status_code != 404:
 
         thing = BeautifulSoup(response.text, features="lxml")
@@ -155,14 +163,16 @@ async def startbids(interaction: discord.Interaction, item: str):
             formatedItem = formatedItem + testing[i] + '\n'
           i = i + 1
 
+  bidCommand = '**/bid id:' + z + ' price: **'
+
+
 
 #Testing End
+  
 
+  embed = discord.Embed(title = "**" + item + "**", url=link, description = formatedItem + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
-  embed = discord.Embed(title = "**" + item + "**", url=link, description = formatedItem + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + '**/bid id:' + z + ' price: **\n')
-
-  await interaction.response.send_message("**" + item + "**", embed=embed)
-
+  await interaction.followup.send("**" + item + "**", embed=embed)
 
 
 
