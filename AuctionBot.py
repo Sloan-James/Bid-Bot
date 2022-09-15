@@ -69,8 +69,8 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
       auctions.get(id).itemBids.append(price)
       auctions.get(id).itemBidders.append(interaction.user.display_name)
 
-      await interaction.response.send_message('Bid for ' + auctions.get(id).itemName + ' accepted for ' + str(price) + ' Plat.', ephemeral = True)
-      await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for ' + str(price) + ' Plat.')
+      await interaction.response.send_message('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
+      await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
     else:
       await interaction.response.send_message('Failed Bid, Try again', ephemeral = True)
       await interaction.user.send('Failed Bid, Try again')
@@ -240,7 +240,7 @@ async def endbids(interaction: discord.Interaction):
       await interaction.user.send('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
 
     for p in winners: 
-      await interaction.followup.send("**" + p[0] + "** won by **" + p[1] + "** for **" + str(p[2]) + "** platinum")
+      await interaction.followup.send("**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum".format(p[2]))
   
        
 
@@ -297,7 +297,7 @@ async def endbid(interaction: discord.Interaction, id:str):
       await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
   
    
-    await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **" + str(prevHighest + 1) + "** platinum")
+    await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
   
     await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
 
