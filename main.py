@@ -95,7 +95,7 @@ async def activebids(interaction: discord.Interaction):
     for x, y in auctions.items():
       activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
 
-  await interaction.response.send_message(activeBids, ephemeral=True)
+      await interaction.response.send_message(activeBids, ephemeral=True)
     
 
 
