@@ -6,6 +6,7 @@ import string
 import requests
 from bs4 import BeautifulSoup
 import re
+import os
 
 
 class Bids:
@@ -15,8 +16,8 @@ class Bids:
     self.itemBidders = []
 
 global guildID
-guildID = GUILD_ID
-channelID = CHANNEL_ID
+guildID = os.environ["GUILD_ID"]
+channelID = os.environ["CHANNEL_ID"]
 
 class aclient(discord.Client):
   def __init__(self):
@@ -274,4 +275,4 @@ async def endbid(interaction: discord.Interaction, id:str):
     del auctions[id]
 
 
-client.run(DISCORD_TOKEN)
+client.run(os.environ["DISCORD_TOKEN"])
