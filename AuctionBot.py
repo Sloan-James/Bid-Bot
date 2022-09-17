@@ -3,16 +3,9 @@ from discord import app_commands
 import random
 import string
 from passwords import DISCORD_TOKEN, GUILD_ID, CHANNEL_ID
-
-
-
-#Testing
 import requests
-import html2text
 from bs4 import BeautifulSoup
-import lxml, lxml.html
 import re
-#Testing End
 
 
 class Bids:
@@ -88,7 +81,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_any_role("Leadership", "Member")
-async def bid(interaction: discord.Interaction):
+async def activebids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
 
   global auctions
@@ -134,8 +127,6 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   link = "https://lucy.allakhazam.com/itemlist.html?searchtext=" + replaceSpaces
 
-#Testing
-  formatedItem = ''
   
   url = "https://eq.magelo.com/quick_search.jspa?keyword=" + replaceSpaces
   headers = {'accept': 'application/xml;q=0.9, */*;q=0.8'}
@@ -147,38 +138,17 @@ async def startbids(interaction: discord.Interaction, item: str):
     if test != -1:
       test2 = response.text[test:test+20].split('"')
       test3 = test2[0].split('/')
-      #url = "https://eq.magelo.com/item/" + test3[2]
       url = "https://lucy.allakhazam.com/item.html?id=" + test3[2]
       s = requests.Session()
       s.post(url)
 
       response = s.get(url)
-      #print(response.text)
       if response.status_code != 404:
         thing = BeautifulSoup(response.text, features="lxml")
-        #txt = thing.find('div', {'class' : 'body'})
         txt = thing.find('table', {"class" : 'eqitem'})
         itemStats = txt.get_text()
-        #testing = txt.get_text('\n').split('\n')
-        
-        #print(txt.get_text())
-        #formatedItem = testing[1] + '\n' + testing[2] + '\n' + testing[3] + testing[4] + '\n' + testing[5] + testing[6] + '\n' + testing[7] + '\n\n' + testing[8] + '\t' + testing[9] + ' '
-
-
-        #i = 10
-        #while i < len(testing) - 2:
-        #  if testing[i][0].isalpha():
-        #    formatedItem = formatedItem + testing[i] + ' '
-         # else:
-        #    formatedItem = formatedItem + testing[i] + '\n'
-        #  i = i + 1
 
   bidCommand = '**/bid id:' + z + ' price: **'
-
-
-
-#Testing End
-  
 
   embed = discord.Embed(title = "**" + item + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
