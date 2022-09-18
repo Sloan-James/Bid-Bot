@@ -16,8 +16,8 @@ class Bids:
     self.itemBidders = []
 
 global guildID
-guildID = int(os.environ["GUILD_ID"]) 
-channelID = int(os.environ["CHANNEL_ID"]) 
+guildID = int(os.getenv("GUILD_ID"))
+channelID = int(os.getenv("CHANNEL_ID"))
 
 class aclient(discord.Client):
   def __init__(self):
