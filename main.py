@@ -57,20 +57,23 @@ def cleanhtml(raw_html):
 async def bid(interaction: discord.Interaction, id: str, price: int):
   if interaction.channel_id != channelID: return
 
+  await interaction.response.defer(ephemeral=True)
+  await asyncio.sleep(1)
+
   global auctions
   if id in auctions:
     if (biddingOpen=='OPEN'):
       auctions.get(id).itemBids.append(price)
       auctions.get(id).itemBidders.append(interaction.user.display_name)
 
-      await interaction.response.send_message('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
+      await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
       await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
     else:
-      await interaction.response.send_message('Failed Bid, Try again', ephemeral = True)
+      await interaction.followup.send('Failed Bid, Try again', ephemeral = True)
       await interaction.user.send('Failed Bid, Try again')
       return
   else:
-    await interaction.response.send_message("No active auction under that ID", ephemeral = True)
+    await interaction.followup.send("No active auction under that ID", ephemeral = True)
     return
 
 
@@ -85,17 +88,20 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 async def activebids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
 
+  await interaction.response.defer(ephemeral=True)
+  await asyncio.sleep(1)
+
   global auctions
 
   activeBids = ""
 
   if auctions == {}:
-    await interaction.response.send_message("There are no active Bids", ephemeral=True)
+    await interaction.followup.send("There are no active Bids", ephemeral=True)
   else:
     for x, y in auctions.items():
       activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
 
-      await interaction.response.send_message(activeBids, ephemeral=True)
+    await interaction.followup.send(activeBids, ephemeral=True)
     
 
 
