@@ -139,6 +139,7 @@ async def startbids(interaction: discord.Interaction, item: str):
   headers = {'accept': 'application/xml;q=0.9, */*;q=0.8'}
   response = requests.get(url, headers=headers)
   itemStats = ''
+  itemName = item
 
   if response.status_code != 404:
     test = response.text.find('/item/')
@@ -152,12 +153,16 @@ async def startbids(interaction: discord.Interaction, item: str):
       response = s.get(url)
       if response.status_code != 404:
         thing = BeautifulSoup(response.text, features="lxml")
+        itemName = thing.find('table', {"class" : "shottopbg"})
+        itemName = itemName.get_text()
+        itemName = itemName.strip()
+        print(thing)
         txt = thing.find('table', {"class" : 'eqitem'})
         itemStats = txt.get_text()
 
   bidCommand = '**/bid id:' + z + ' price: **'
 
-  embed = discord.Embed(title = "**" + item + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
+  embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
   await interaction.followup.send("**" + item + "**", embed=embed)
 
@@ -216,10 +221,14 @@ async def endbids(interaction: discord.Interaction):
       
       await interaction.user.send('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
 
-    for p in winners: 
-      await interaction.followup.send("**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum".format(p[2]))
-  
+    #for p in winners: 
+      #await interaction.followup.send("**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum".format(p[2]))
+    winningBids = ""
+
+    for p in winners:
+      winningBids = winningBids + "**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum\n".format(p[2])
        
+    await interaction.followup.send(winningBids)
 
     biddingOpen = 'CLOSED'
     auctions = {}
@@ -279,6 +288,61 @@ async def endbid(interaction: discord.Interaction, id:str):
     await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
 
     del auctions[id]
+
+
+#Item Lookup
+@tree.command(
+  name = "search",
+  description = "Search for an Item",
+  guild = discord.Object(id=guildID)
+)
+async def search(interaction: discord.Interaction, item: str):
+
+  await interaction.response.defer()
+  await asyncio.sleep(1)
+
+
+  ch1 = '%20'
+  ch2 = '%27'
+
+  replaceSpaces = item
+  replaceSpaces = replaceSpaces.replace(' ',ch1)
+  replaceSpaces = replaceSpaces.replace('\'',ch2)        
+
+  link = "https://lucy.allakhazam.com/itemlist.html?searchtext=" + replaceSpaces
+
+  
+  url = "https://eq.magelo.com/quick_search.jspa?keyword=" + replaceSpaces
+  headers = {'accept': 'application/xml;q=0.9, */*;q=0.8'}
+  response = requests.get(url, headers=headers)
+  itemStats = ''
+  itemName = item
+
+  if response.status_code != 404:
+    test = response.text.find('/item/')
+    if test != -1:
+      test2 = response.text[test:test+20].split('"')
+      test3 = test2[0].split('/')
+      url = "https://lucy.allakhazam.com/item.html?id=" + test3[2]
+      s = requests.Session()
+      s.post(url)
+
+      response = s.get(url)
+      if response.status_code != 404:
+        thing = BeautifulSoup(response.text, features="lxml")
+        itemName = thing.find('table', {"class" : "shottopbg"})
+        itemName = itemName.get_text()
+        itemName = itemName.strip()
+        txt = thing.find('table', {"class" : 'eqitem'})
+        itemStats = txt.get_text()
+
+
+  embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats)
+
+  await interaction.followup.send("**" + item + "**", embed=embed)
+
+
+
 
 
 client.run(os.environ["DISCORD_TOKEN"])
