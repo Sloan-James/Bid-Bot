@@ -12,6 +12,7 @@ import os
 class Bids:
   def __init__(self):
     self.itemName = str
+    self.BidderID = []
     self.itemBids = []
     self.itemBidders = []
 
@@ -63,6 +64,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   global auctions
   if id in auctions:
     if (biddingOpen=='OPEN'):
+      auctions.get(id).BidderID.append(interaction.user.id)
       auctions.get(id).itemBids.append(price)
       auctions.get(id).itemBidders.append(interaction.user.display_name)
 
@@ -216,16 +218,20 @@ async def endbids(interaction: discord.Interaction):
         
         
           
-      winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1])
+      winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1, i.BidderID[currentTopBid]])
       
       await interaction.user.send('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
 
-    #for p in winners: 
-      #await interaction.followup.send("**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum".format(p[2]))
+
     winningBids = ""
 
+
     for p in winners:
+      user = await client.fetch_user(p[3])
+      await user.send("You won **" + p[0] + "** for **{:,}** platinum".format(p[2]))
       winningBids = winningBids + "**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum\n".format(p[2])
+
+
        
     await interaction.followup.send(winningBids)
 
@@ -285,6 +291,9 @@ async def endbid(interaction: discord.Interaction, id:str):
     await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
   
     await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
+
+    user = await client.fetch_user(auctions[id].BidderID[currentTopBid])
+    await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
 
     del auctions[id]
 
