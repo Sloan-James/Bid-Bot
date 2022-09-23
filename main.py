@@ -156,7 +156,6 @@ async def startbids(interaction: discord.Interaction, item: str):
         itemName = thing.find('table', {"class" : "shottopbg"})
         itemName = itemName.get_text()
         itemName = itemName.strip()
-        print(thing)
         txt = thing.find('table', {"class" : 'eqitem'})
         itemStats = txt.get_text()
 
