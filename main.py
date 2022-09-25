@@ -1,3 +1,4 @@
+from types import NoneType
 import discord, asyncio
 from discord import app_commands
 import random
@@ -64,12 +65,21 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   global auctions
   if id in auctions:
     if (biddingOpen=='OPEN'):
-      auctions.get(id).BidderID.append(interaction.user.id)
-      auctions.get(id).itemBids.append(price)
-      auctions.get(id).itemBidders.append(interaction.user.display_name)
+      if interaction.user.id in auctions.get(id).BidderID:
+        index = auctions.get(id).BidderID.index(interaction.user.id)
+        if interaction.user.display_name == auctions.get(id).itemBidders[index]:
+          auctions.get(id).itemBids[index] = price
+          await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price), ephemeral = True)
+          await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price))
+        else:
+          await interaction.followup.send('Please do not change your display name after placing a bid. If you believe you received this message in error, please message an officer')
+      else:
+        auctions.get(id).BidderID.append(interaction.user.id)
+        auctions.get(id).itemBids.append(price)
+        auctions.get(id).itemBidders.append(interaction.user.display_name)
 
-      await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
-      await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
+        await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
+        await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
     else:
       await interaction.followup.send('Failed Bid, Try again', ephemeral = True)
       await interaction.user.send('Failed Bid, Try again')
@@ -156,10 +166,13 @@ async def startbids(interaction: discord.Interaction, item: str):
       if response.status_code != 404:
         thing = BeautifulSoup(response.text, features="lxml")
         itemName = thing.find('table', {"class" : "shottopbg"})
-        itemName = itemName.get_text()
-        itemName = itemName.strip()
-        txt = thing.find('table', {"class" : 'eqitem'})
-        itemStats = txt.get_text()
+        if itemName != None:
+          itemName = itemName.get_text()
+          itemName = itemName.strip()
+          txt = thing.find('table', {"class" : 'eqitem'})
+          itemStats = txt.get_text()
+        else:
+          itemName = item
 
   bidCommand = '**/bid id:' + z + ' price: **'
 
@@ -220,7 +233,7 @@ async def endbids(interaction: discord.Interaction):
           
       winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1, i.BidderID[currentTopBid]])
       
-      await interaction.user.send('**' + i.itemName + ':**\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
+      await interaction.user.send('**' + i.itemName + ':**\n' + str(i.BidderID) + '\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
 
 
     winningBids = ""
@@ -290,7 +303,7 @@ async def endbid(interaction: discord.Interaction, id:str):
    
     await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
   
-    await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
+    await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
 
     user = await client.fetch_user(auctions[id].BidderID[currentTopBid])
     await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
