@@ -55,7 +55,7 @@ def cleanhtml(raw_html):
   description = "Place a Bid",
   guild = discord.Object(id=guildID)
 )
-@discord.app_commands.checks.has_any_role("Leadership", "Member")
+#@discord.app_commands.checks.has_any_role("Leadership", "Member")
 async def bid(interaction: discord.Interaction, id: str, price: int):
   if interaction.channel_id != channelID: return
 
@@ -96,7 +96,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   description = "List the currently active bids",
   guild = discord.Object(id=guildID)
 )
-@discord.app_commands.checks.has_any_role("Leadership", "Member")
+#@discord.app_commands.checks.has_any_role("Leadership", "Member")
 async def activebids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
 
