@@ -2,7 +2,6 @@ import discord, asyncio
 from discord import app_commands
 import random
 import string
-#from passwords import DISCORD_TOKEN, GUILD_ID, CHANNEL_ID
 import requests
 from bs4 import BeautifulSoup
 import re
