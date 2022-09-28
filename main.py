@@ -1,4 +1,3 @@
-from types import NoneType
 import discord, asyncio
 from discord import app_commands
 import random
