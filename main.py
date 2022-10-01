@@ -68,7 +68,10 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
         if interaction.user.display_name == auctions.get(id).itemBidders[index]:
           auctions.get(id).itemBids[index] = price
           await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price), ephemeral = True)
-          await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price))
+          try:
+            await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price))
+          except discord.Forbidden:
+            pass
         else:
           await interaction.followup.send('Please do not change your display name after placing a bid. If you believe you received this message in error, please message an officer')
       else:
@@ -77,10 +80,16 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
         auctions.get(id).itemBidders.append(interaction.user.display_name)
 
         await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
-        await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
+        try:
+          await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
+        except discord.Forbidden:
+          pass
     else:
       await interaction.followup.send('Failed Bid, Try again', ephemeral = True)
-      await interaction.user.send('Failed Bid, Try again')
+      try:
+        await interaction.user.send('Failed Bid, Try again')
+      except discord.Forbidden:
+        pass
       return
   else:
     await interaction.followup.send("No active auction under that ID", ephemeral = True)
@@ -231,15 +240,20 @@ async def endbids(interaction: discord.Interaction):
           
       winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1, i.BidderID[currentTopBid]])
       
-      await interaction.user.send('**' + i.itemName + ':**\n' + str(i.BidderID) + '\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
-
+      try:
+        await interaction.user.send('**' + i.itemName + ':**\n' + str(i.BidderID) + '\n' + str(i.itemBidders) + '\n' + str(i.itemBids) + '\nAll Winners:\n' + str(winners))
+      except discord.Forbidden:
+        pass
 
     winningBids = ""
 
 
     for p in winners:
       user = await client.fetch_user(p[3])
-      await user.send("You won **" + p[0] + "** for **{:,}** platinum".format(p[2]))
+      try:
+        await user.send("You won **" + p[0] + "** for **{:,}** platinum".format(p[2]))
+      except discord.Forbidden:
+        pass
       winningBids = winningBids + "**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum\n".format(p[2])
 
 
@@ -301,10 +315,16 @@ async def endbid(interaction: discord.Interaction, id:str):
    
     await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
   
-    await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
+    try:
+      await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids)) 
+    except discord.Forbidden:
+      pass
 
     user = await client.fetch_user(auctions[id].BidderID[currentTopBid])
-    await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
+    try:
+      await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
+    except discord.Forbidden:
+      pass
 
     del auctions[id]
 
