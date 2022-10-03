@@ -309,10 +309,6 @@ async def endbid(interaction: discord.Interaction, id:str):
             prevHighest = l
             
         count = count + 1  
-    else:
-      await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
-  
-   
     await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
   
     try:
@@ -325,6 +321,12 @@ async def endbid(interaction: discord.Interaction, id:str):
       await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
     except discord.Forbidden:
       pass
+        
+    else:
+      await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
+  
+   
+    
 
     del auctions[id]
 
