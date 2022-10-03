@@ -30,11 +30,9 @@ class aclient(discord.Client):
       await tree.sync(guild = discord.Object(id=guildID))
       self.synced = True
       global auctions 
-      global biddingOpen
       global memberList
       global bidCommand
       auctions = {}
-      biddingOpen = 'CLOSED'
       
     print(f"I have logged in as {self.user}.")
 
@@ -62,35 +60,27 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 
   global auctions
   if id in auctions:
-    if (biddingOpen=='OPEN'):
-      if interaction.user.id in auctions.get(id).BidderID:
-        index = auctions.get(id).BidderID.index(interaction.user.id)
-        if interaction.user.display_name == auctions.get(id).itemBidders[index]:
-          auctions.get(id).itemBids[index] = price
-          await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price), ephemeral = True)
-          try:
-            await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price))
-          except discord.Forbidden:
-            pass
-        else:
-          await interaction.followup.send('Please do not change your display name after placing a bid. If you believe you received this message in error, please message an officer')
-      else:
-        auctions.get(id).BidderID.append(interaction.user.id)
-        auctions.get(id).itemBids.append(price)
-        auctions.get(id).itemBidders.append(interaction.user.display_name)
-
-        await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
+    if interaction.user.id in auctions.get(id).BidderID:
+      index = auctions.get(id).BidderID.index(interaction.user.id)
+      if interaction.user.display_name == auctions.get(id).itemBidders[index]:
+        auctions.get(id).itemBids[index] = price
+        await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price), ephemeral = True)
         try:
-          await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
+          await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' updated to {:,} Plat.'.format(price))
         except discord.Forbidden:
           pass
+      else:
+        await interaction.followup.send('Please do not change your display name after placing a bid. If you believe you received this message in error, please message an officer')
     else:
-      await interaction.followup.send('Failed Bid, Try again', ephemeral = True)
+      auctions.get(id).BidderID.append(interaction.user.id)
+      auctions.get(id).itemBids.append(price)
+      auctions.get(id).itemBidders.append(interaction.user.display_name)
+
+      await interaction.followup.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
       try:
-        await interaction.user.send('Failed Bid, Try again')
+        await interaction.user.send('Bid for ' + auctions.get(id).itemName + ' accepted for {:,} Plat.'.format(price))
       except discord.Forbidden:
         pass
-      return
   else:
     await interaction.followup.send("No active auction under that ID", ephemeral = True)
     return
@@ -137,10 +127,8 @@ async def startbids(interaction: discord.Interaction, item: str):
   await interaction.response.defer()
   await asyncio.sleep(1)
 
-  global biddingOpen
   global auctions
 
-  biddingOpen = 'OPEN'
   ch1 = '%20'
   ch2 = '%27'
   
@@ -260,7 +248,6 @@ async def endbids(interaction: discord.Interaction):
        
     await interaction.followup.send(winningBids)
 
-    biddingOpen = 'CLOSED'
     auctions = {}
     del winners
       
@@ -284,11 +271,7 @@ async def endbid(interaction: discord.Interaction, id:str):
     await interaction.response.send_message("There are no active Bid with that ID")
   else:
     await interaction.response.defer()
-    await asyncio.sleep(2)
-
-    winners = []
-    
-               
+    await asyncio.sleep(2)         
     
     currentTopBid = 0
     highestBid = 0
@@ -321,7 +304,7 @@ async def endbid(interaction: discord.Interaction, id:str):
       await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
     except discord.Forbidden:
       pass
-        
+
     else:
       await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
   
