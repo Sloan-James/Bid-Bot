@@ -7,7 +7,6 @@ from bs4 import BeautifulSoup
 import re
 import os
 
-
 class Bids:
   def __init__(self):
     self.itemName = str
@@ -56,7 +55,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
-  await asyncio.sleep(1)
+  await asyncio.sleep(4)
 
   global auctions
   if id in auctions:
@@ -98,7 +97,7 @@ async def activebids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
-  await asyncio.sleep(1)
+  await asyncio.sleep(4)
 
   global auctions
 
@@ -125,7 +124,7 @@ async def startbids(interaction: discord.Interaction, item: str):
   if interaction.channel_id != channelID: return
 
   await interaction.response.defer()
-  await asyncio.sleep(1)
+  await asyncio.sleep(4)
 
   global auctions
 
@@ -195,7 +194,7 @@ async def endbids(interaction: discord.Interaction):
     await interaction.response.send_message("There are no active Bids")
   else:
     await interaction.response.defer()
-    await asyncio.sleep(2)
+    await asyncio.sleep(4)
 
     winners = []
     
@@ -292,18 +291,18 @@ async def endbid(interaction: discord.Interaction, id:str):
             prevHighest = l
             
         count = count + 1  
-    await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
+      await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
   
-    try:
-      await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids) + '\nWinnner:\n' + auctions[id].itemName + '\n' + auctions[id].itemBidders[currentTopBid] + '\n{:,}'.format(prevHighest +1))
-    except discord.Forbidden:
-      pass
+      try:
+        await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids) + '\nWinnner:\n' + auctions[id].itemName + '\n' + auctions[id].itemBidders[currentTopBid] + '\n{:,}'.format(prevHighest +1))
+      except discord.Forbidden:
+        pass
 
-    user = await client.fetch_user(auctions[id].BidderID[currentTopBid])
-    try:
-      await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
-    except discord.Forbidden:
-      pass
+      user = await client.fetch_user(auctions[id].BidderID[currentTopBid])
+      try:
+        await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
+      except discord.Forbidden:
+        pass
 
     else:
       await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
@@ -323,7 +322,7 @@ async def endbid(interaction: discord.Interaction, id:str):
 async def search(interaction: discord.Interaction, item: str):
 
   await interaction.response.defer()
-  await asyncio.sleep(1)
+  await asyncio.sleep(4)
 
 
   ch1 = '%20'
