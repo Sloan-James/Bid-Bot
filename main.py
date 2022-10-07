@@ -228,7 +228,7 @@ async def endbids(interaction: discord.Interaction):
       winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1, i.BidderID[currentTopBid]])
       
       try:
-        await interaction.user.send('**' + i.itemName + ':**\n' + str(i.BidderID) + '\n' + str(i.itemBidders) + '\n' + str(i.itemBids) + '\nAll Winners:\n' + str(winners))
+        await interaction.user.send('**' + i.itemName + ':**\n' + str(i.BidderID) + '\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
       except discord.Forbidden:
         pass
 
@@ -244,7 +244,11 @@ async def endbids(interaction: discord.Interaction):
       winningBids = winningBids + "**" + p[0] + "** won by **" + p[1] + "** for ** {:,} ** platinum\n".format(p[2])
 
 
-       
+    try:
+      await interaction.user.send('**All Winners:**\n' + str(winners))
+    except discord.Forbidden:
+      pass
+    
     await interaction.followup.send(winningBids)
 
     auctions = {}
