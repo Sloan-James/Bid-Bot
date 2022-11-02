@@ -1,5 +1,5 @@
 import discord, asyncio
-from discord import app_commands
+from discord import ui, app_commands
 import random
 import string
 import requests
@@ -43,6 +43,65 @@ CLEANR = re.compile('<.*?>')
 def cleanhtml(raw_html):
   cleantext = re.sub(CLEANR, '', raw_html)
   return cleantext
+
+#Modal window for Bids
+class Bid_Modal(ui.Modal, title = "Default"):
+  def __init__(self, id, item):
+    super().__init__(timeout = None)
+    global auctions
+    self.title = item
+    self.id = id
+    self.auctions = auctions
+
+
+  bidAmount = ui.TextInput(label = "How much?", style = discord.TextStyle.short, placeholder = "100000", required = True) 
+  
+  async def on_submit(self, interaction: discord.Interaction):
+    price = int(self.children[0].value)
+    if interaction.user.id in self.auctions.get(self.id).BidderID:
+      index = self.auctions.get(self.id).BidderID.index(interaction.user.id)
+      if interaction.user.display_name == self.auctions.get(self.id).itemBidders[index]:
+        self.auctions.get(self.id).itemBids[index] = price
+        await interaction.response.send_message('Bid for ' + self.auctions.get(self.id).itemName + ' updated to {:,} Plat.'.format(price), ephemeral = True)
+        try:
+          await interaction.user.send('Bid for ' + self.auctions.get(self.id).itemName + ' updated to {:,} Plat.'.format(price))
+        except discord.Forbidden:
+          pass
+      else:
+        await interaction.response.send_message('Please do not change your display name after placing a bid. If you believe you received this message in error, please message an officer')
+    else:
+      self.auctions.get(self.id).BidderID.append(interaction.user.id)
+      self.auctions.get(self.id).itemBids.append(price)
+      self.auctions.get(self.id).itemBidders.append(interaction.user.display_name)
+
+      await interaction.response.send_message('Bid for ' + self.auctions.get(self.id).itemName + ' accepted for {:,} Plat.'.format(price), ephemeral = True)
+      try:
+        await interaction.user.send('Bid for ' + self.auctions.get(self.id).itemName + ' accepted for {:,} Plat.'.format(price))
+      except discord.Forbidden:
+        pass
+  
+  async def on_error(self, interaction: discord.Interaction, error):
+    if self.id not in self.auctions:
+      await interaction.response.send_message("Auction not active", ephemeral = True)
+    else:
+      await interaction.response.send_message("Enter a valid number", ephemeral = True)
+
+
+#Button class for bid
+class placeABid(discord.ui.View):
+  def __init__(self, id, item):
+    super().__init__(timeout = None)
+    global auctions
+    self.id = id
+    self.item = item
+    self.auctions = auctions 
+
+  @discord.ui.button(label="Place Bid", style=discord.ButtonStyle.green)
+  async def placeBid(self, interaction: discord.Interaction, button: discord.ui.Button):
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+
+ 
+
 
 # Place a Bid
 @tree.command(
@@ -172,7 +231,8 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
-  await interaction.followup.send("**" + item + "**", embed=embed)
+
+  await interaction.followup.send("**" + item + "**", embed=embed, view = placeABid(z, item))
 
 
 
