@@ -208,9 +208,10 @@ async def startbids(interaction: discord.Interaction, item: str):
   ch1 = '%20'
   ch2 = '%27'
   
-  if item in auctions.itemName:
-    interaction.followup.send(item + " already up for auction, try again when the current one as completed")
-    return
+  for id in auctions:
+    if item in id.itemName:
+      interaction.followup.send(item + " already up for auction, try again when the current one as completed")
+      return
 
   replaceSpaces = item
   replaceSpaces = replaceSpaces.replace(' ',ch1)
