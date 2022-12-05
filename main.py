@@ -129,7 +129,6 @@ class activeAuctions(discord.ui.View):
   description = "Place a Bid",
   guild = discord.Object(id=guildID)
 )
-#@discord.app_commands.checks.has_any_role("Leadership", "Member")
 async def bid(interaction: discord.Interaction, id: str, price: int):
   if interaction.channel_id != channelID: return
 
@@ -209,6 +208,10 @@ async def startbids(interaction: discord.Interaction, item: str):
   ch1 = '%20'
   ch2 = '%27'
   
+  if item in auctions.itemName:
+    interaction.followup.send(item + " already up for auction, try again when the current one as completed")
+    return
+
   replaceSpaces = item
   replaceSpaces = replaceSpaces.replace(' ',ch1)
   replaceSpaces = replaceSpaces.replace('\'',ch2)        
