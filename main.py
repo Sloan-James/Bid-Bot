@@ -210,7 +210,7 @@ async def startbids(interaction: discord.Interaction, item: str):
   
   for id in auctions:
     if item == auctions.get(id).itemName:
-      interaction.followup.send(item + " already up for auction, try again when the current one as completed")
+      await interaction.followup.send(item + " already up for auction, try again when the current one as completed")
       return
 
   replaceSpaces = item
