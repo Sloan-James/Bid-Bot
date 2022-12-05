@@ -117,11 +117,9 @@ class activeAuctions(discord.ui.View):
     global auctions
     
     self.auctions = auctions
-    print("Test1")
     for x, y in self.auctions.items():
       self.add_item(itemButton(x, y))
 
-    print("Test2")
 
 
 
@@ -189,7 +187,7 @@ async def activebids(interaction: discord.Interaction):
     #for x, y in auctions.items():
       #activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
 
-    await interaction.followup.send(activeBids, view = activeAuctions(), ephemeral=True)
+    await interaction.followup.send(view = activeAuctions(), ephemeral=True)
     
 
 
