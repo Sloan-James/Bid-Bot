@@ -209,7 +209,7 @@ async def startbids(interaction: discord.Interaction, item: str):
   ch2 = '%27'
   
   for id in auctions:
-    if item in id.itemName:
+    if item in auctions.id.itemName:
       interaction.followup.send(item + " already up for auction, try again when the current one as completed")
       return
 
