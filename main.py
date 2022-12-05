@@ -91,16 +91,38 @@ class Bid_Modal(ui.Modal, title = "Default"):
 class placeABid(discord.ui.View):
   def __init__(self, id, item):
     super().__init__(timeout = None)
-    global auctions
+    #global auctions
     self.id = id
     self.item = item
-    self.auctions = auctions 
+    #self.auctions = auctions 
 
   @discord.ui.button(label="Place Bid", style=discord.ButtonStyle.green)
   async def placeBid(self, interaction: discord.Interaction, button: discord.ui.Button):
     await interaction.response.send_modal(Bid_Modal(self.id, self.item))
 
- 
+#Multiple buttons for bidding
+class itemButton(discord.ui.button):
+  def __init__(self, id, item):
+    super().__init__(label = item, style=discord.ButtonStyle.green)
+
+    self.id = id
+    self.item = item
+
+  async def callback(self, interaction):
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+
+class activeAuctions(discord.ui.View):
+  def __init__(self):
+    super().__init__(timeout = None)
+    global auctions
+    
+    self.row = 0
+    self.column = 0
+
+    for x, y in auctions.items():
+      self.add_item(itemButton(x, y))
+
+
 
 
 # Place a Bid
@@ -151,7 +173,6 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   description = "List the currently active bids",
   guild = discord.Object(id=guildID)
 )
-#@discord.app_commands.checks.has_any_role("Leadership", "Member")
 async def activebids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
 
@@ -165,10 +186,10 @@ async def activebids(interaction: discord.Interaction):
   if auctions == {}:
     await interaction.followup.send("There are no active Bids", ephemeral=True)
   else:
-    for x, y in auctions.items():
-      activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
+    #for x, y in auctions.items():
+      #activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
 
-    await interaction.followup.send(activeBids, ephemeral=True)
+    await interaction.followup.send(activeBids, view = activeAuctions(), ephemeral=True)
     
 
 
