@@ -116,13 +116,12 @@ class activeAuctions(discord.ui.View):
     super().__init__(timeout = None)
     global auctions
     
-    self.row = 0
-    self.column = 0
     self.auctions = auctions
-
+    print("Test1")
     for x, y in self.auctions.items():
       self.add_item(itemButton(x, y))
 
+    print("Test2")
 
 
 
