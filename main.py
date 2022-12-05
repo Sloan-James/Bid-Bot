@@ -118,8 +118,9 @@ class activeAuctions(discord.ui.View):
     
     self.row = 0
     self.column = 0
+    self.auctions = auctions
 
-    for x, y in auctions.items():
+    for x, y in self.auctions.items():
       self.add_item(itemButton(x, y))
 
 
