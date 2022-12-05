@@ -101,7 +101,7 @@ class placeABid(discord.ui.View):
     await interaction.response.send_modal(Bid_Modal(self.id, self.item))
 
 #Multiple buttons for bidding
-class itemButton(discord.ui.button):
+class itemButton(discord.ui.Button):
   def __init__(self, id, item):
     super().__init__(label = item, style=discord.ButtonStyle.green)
 
