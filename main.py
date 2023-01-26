@@ -122,7 +122,7 @@ class placeABid(discord.ui.View):
   
   async def disableButton(self, interaction: discord.Interaction, button: discord.ui.Button):
     button.disabled = True
-    await interaction.response.edit_message(view=self)
+    interaction.response.edit_message(view=self)
 
 #Multiple buttons for bidding
 class itemButton(discord.ui.Button):
