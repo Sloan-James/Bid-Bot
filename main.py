@@ -113,6 +113,10 @@ class placeABid(discord.ui.View):
       button.disabled = True
       await interaction.response.edit_message(view=self)
       await interaction.user.send("This auction has ended")
+  
+  async def disableButton(self, interaction: discord.Interaction, button: discord.ui.Button):
+    button.disabled = True
+    await interaction.response.edit_message(view=self)
 
 #Multiple buttons for bidding
 class itemButton(discord.ui.Button):
@@ -297,7 +301,7 @@ async def endbids(interaction: discord.Interaction):
     winners = []
     #Testing
     for i in auctions.values():
-      i.button.disabled = True
+      i.button.disableButton()
     #End Testing
 
     for i in auctions.values():            
