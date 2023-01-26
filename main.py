@@ -15,6 +15,7 @@ class Bids:
     self.itemBidders = []
     self.theView = discord.ui.View
     self.message = int
+    self.button = str
 
 global guildID
 guildID = int(os.getenv("GUILD_ID"))
@@ -119,7 +120,7 @@ class placeABid(discord.ui.View):
       await interaction.user.send("This auction has ended")
   
   async def disableButton(self, messageID):
-    button1 = [x for x in self.children if x.type == "button"][0]
+    button1 = [x for x in self.children if x.custom_id == "bidButton"][0]
     button1.disabled = True
     channel = client.get_channel(channelID)
     message = await channel.fetch_message(messageID)
