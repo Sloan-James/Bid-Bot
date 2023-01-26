@@ -108,8 +108,9 @@ class placeABid(discord.ui.View):
     global auctions
     self.auctions = auctions
     self.interaction = interaction
+    self.button = button
     if self.auctions.get(self.id) is not None:
-      self.auctions.get(self.id).button = self
+      self.auctions.get(self.id).button = self.button
       self.auctions.get(self.id).interaction = self.interaction
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
