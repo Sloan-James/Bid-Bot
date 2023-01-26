@@ -13,6 +13,7 @@ class Bids:
     self.BidderID = []
     self.itemBids = []
     self.itemBidders = []
+    self.button = []
 
 global guildID
 guildID = int(os.getenv("GUILD_ID"))
@@ -91,13 +92,18 @@ class Bid_Modal(ui.Modal, title = "Default"):
 class placeABid(discord.ui.View):
   def __init__(self, id, item):
     super().__init__(timeout = None)
-    #global auctions
+    
     self.id = id
     self.item = item
-    #self.auctions = auctions 
+    
 
   @discord.ui.button(label="Place Bid", style=discord.ButtonStyle.green)
   async def placeBid(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #Testing
+    global auctions
+    self.auctions = auctions
+    self.auctions.get(self.id).button = self
+    #End Testing
     await interaction.response.send_modal(Bid_Modal(self.id, self.item))
 
 #Multiple buttons for bidding
@@ -259,6 +265,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 
 
 
+
 #Ending Bids
 @tree.command(
   name = "endbids",
@@ -270,7 +277,7 @@ async def endbids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
 
   global auctions
-        
+
   currentTopBid = 0        
 
   if auctions == {}:
@@ -280,7 +287,11 @@ async def endbids(interaction: discord.Interaction):
     await asyncio.sleep(4)
 
     winners = []
-    
+    #Testing
+    for i in auctions.values():
+      i.button.disabled = True
+    #End Testing
+
     for i in auctions.values():            
     
       currentTopBid = 0
