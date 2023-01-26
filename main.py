@@ -87,6 +87,10 @@ class Bid_Modal(ui.Modal, title = "Default"):
     else:
       await interaction.response.send_message("Enter a valid number", ephemeral = True)
 
+class inactiveAuction(ui.Modal, title="Auction is Inactive"):
+  def __init__(self):
+    super().__init__(timeout = 5)
+
 
 #Button class for bid
 class placeABid(discord.ui.View):
@@ -102,9 +106,11 @@ class placeABid(discord.ui.View):
     #Testing
     global auctions
     self.auctions = auctions
-    self.auctions.get(self.id).button = self
-    #End Testing
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+    if self.auctions.get(self.id) is not None:
+      self.auctions.get(self.id).button = self
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+    else:
+      await interaction.response.send_modal(inactiveAuction())
 
 #Multiple buttons for bidding
 class itemButton(discord.ui.Button):
