@@ -111,6 +111,7 @@ class placeABid(discord.ui.View):
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
       button.disabled = True
+      await interaction.response.edit_message(view=self)
       await interaction.user.send("This auction has ended")
 
 #Multiple buttons for bidding
