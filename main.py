@@ -14,6 +14,7 @@ class Bids:
     self.itemBids = []
     self.itemBidders = []
     self.button = []
+    self.interaction = []
 
 global guildID
 guildID = int(os.getenv("GUILD_ID"))
@@ -108,15 +109,14 @@ class placeABid(discord.ui.View):
     self.auctions = auctions
     if self.auctions.get(self.id) is not None:
       self.auctions.get(self.id).button = self
+      self.auctions.get(self.id).interaction = interaction
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
       await interaction.user.send("This auction has ended")
   
-  async def disableButton(self):
-    interaction = discord.Interaction
-    button = discord.ui.Button
+  async def disableButton(self, interaction: discord.Interaction, button: discord.ui.Button):
     button.disabled = True
     await interaction.response.edit_message(view=self)
 
@@ -303,7 +303,7 @@ async def endbids(interaction: discord.Interaction):
     winners = []
     #Testing
     for i in auctions.values():
-      await i.button.disableButton()
+      await i.button.disableButton(i.interaction, i.button)
     #End Testing
 
     for i in auctions.values():            
