@@ -303,7 +303,7 @@ async def endbids(interaction: discord.Interaction):
     winners = []
     #Testing
     for i in auctions.values():
-      await i.button.disableButton(i.interaction, i.button)
+      i.button.disableButton(i.interaction, i.button)
     #End Testing
 
     for i in auctions.values():            
