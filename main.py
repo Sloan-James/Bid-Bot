@@ -114,7 +114,9 @@ class placeABid(discord.ui.View):
       await interaction.response.edit_message(view=self)
       await interaction.user.send("This auction has ended")
   
-  async def disableButton(self, interaction: discord.Interaction, button: discord.ui.Button):
+  async def disableButton(self):
+    interaction = discord.Interaction
+    button = discord.ui.Button
     button.disabled = True
     await interaction.response.edit_message(view=self)
 
