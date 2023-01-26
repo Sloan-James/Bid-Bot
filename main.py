@@ -123,7 +123,7 @@ class placeABid(discord.ui.View):
     button1.disabled = True
     channel = client.get_channel(channelID)
     message = await channel.fetch_message(messageID)
-    await message.edit(view=self)
+    message.edit(view=self)
 
 #Multiple buttons for bidding
 class itemButton(discord.ui.Button):
@@ -308,7 +308,7 @@ async def endbids(interaction: discord.Interaction):
     winners = []
     #Testing
     for i in auctions.values():
-      i.theView.disableButton(i.message)
+      await i.theView.disableButton(i.message)
     #End Testing
 
     for i in auctions.values():            
