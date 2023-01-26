@@ -123,7 +123,7 @@ class placeABid(discord.ui.View):
     button1.disabled = True
     channel = client.get_channel(channelID)
     message = await channel.fetch_message(messageID)
-    message.interaction.response.edit_message(view=self)
+    message.edit(view=self)
 
 #Multiple buttons for bidding
 class itemButton(discord.ui.Button):
