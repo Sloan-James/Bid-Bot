@@ -14,8 +14,7 @@ class Bids:
     self.itemBids = []
     self.itemBidders = []
     self.theView = discord.ui.View
-    self.button = discord.ui.Button
-    self.interaction = discord.Interaction
+    self.message = int
 
 global guildID
 guildID = int(os.getenv("GUILD_ID"))
@@ -112,18 +111,19 @@ class placeABid(discord.ui.View):
     self.button = button
     if self.auctions.get(self.id) is not None:
       self.auctions.get(self.id).theView = self
-      self.auctions.get(self.id).button = self.button
-      self.auctions.get(self.id).interaction = self.interaction
+      self.auctions.get(self.id).message = interaction.message.id
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
       await interaction.user.send("This auction has ended")
   
-  async def disableButton(self, interaction: discord.Interaction):
+  async def disableButton(self, messageID):
     button1 = [x for x in self.children if x.custom_id == "bidButton"][0]
     button1.disabled = True
-    await interaction.response.edit_message(view=self)
+    channel = client.get_channel(channelID)
+    message = await channel.fetch_message(messageID)
+    await message.interaction.response.edit_message(view=self)
 
 #Multiple buttons for bidding
 class itemButton(discord.ui.Button):
@@ -308,7 +308,7 @@ async def endbids(interaction: discord.Interaction):
     winners = []
     #Testing
     for i in auctions.values():
-      i.theView.disableButton(i.interaction)
+      i.theView.disableButton(i.message)
     #End Testing
 
     for i in auctions.values():            
