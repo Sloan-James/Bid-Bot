@@ -107,10 +107,10 @@ class placeABid(discord.ui.View):
     global auctions
     self.auctions = auctions
     if self.auctions.get(self.id) is not None:
-      self.auctions.get(self.id).button = self
+      self.auctions.get(self.id).button = button
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
-      self.button.disabled = True
+      button.disabled = True
       await interaction.user.send("This auction has ended")
 
 #Multiple buttons for bidding
