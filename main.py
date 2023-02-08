@@ -52,7 +52,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
   def __init__(self, id, item):
     super().__init__(timeout = None)
     global auctions
-    self.title = item
+    self.title = item[:45]
     self.id = id
     self.auctions = auctions
 
