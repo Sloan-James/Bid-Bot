@@ -19,7 +19,8 @@ class Bids:
 
 global guildID
 guildID = int(os.getenv("GUILD_ID"))
-channelID = int(os.getenv("CHANNEL_ID"))
+#channelID = int(os.getenv("CHANNEL_ID"))
+channelID = int(discord.utils.get(client.get_all_channels(), name="auctions").id)
 
 class aclient(discord.Client):
   def __init__(self):
@@ -29,7 +30,7 @@ class aclient(discord.Client):
   async def on_ready(self):
     await self.wait_until_ready()
     if not self.synced:
-      await tree.sync(guild = discord.Object(id=guildID))
+      await tree.sync("""guild = discord.Object(id=guildID)""")
       self.synced = True
       global auctions 
       global memberList
@@ -153,7 +154,7 @@ class activeAuctions(discord.ui.View):
 @tree.command(
   name = "bid",
   description = "Place a Bid",
-  guild = discord.Object(id=guildID)
+  #guild = discord.Object(id=guildID)
 )
 async def bid(interaction: discord.Interaction, id: str, price: int):
   if interaction.channel_id != channelID: return
@@ -194,7 +195,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 @tree.command(
   name = "activebids",
   description = "List the currently active bids",
-  guild = discord.Object(id=guildID)
+  #guild = discord.Object(id=guildID)
 )
 async def activebids(interaction: discord.Interaction):
   if interaction.channel_id != channelID: return
@@ -220,7 +221,7 @@ async def activebids(interaction: discord.Interaction):
 @tree.command(
   name = "startbids",
   description = "Start a bid",
-  guild = discord.Object(id=guildID)
+  #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def startbids(interaction: discord.Interaction, item: str):
@@ -290,7 +291,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 @tree.command(
   name = "endbids",
   description = "End All Bids",
-  guild = discord.Object(id=guildID)
+  #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endbids(interaction: discord.Interaction):
@@ -374,7 +375,7 @@ async def endbids(interaction: discord.Interaction):
 @tree.command(
   name = "endbid",
   description = "End Bid on item with id",
-  guild = discord.Object(id=guildID)
+  #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endbid(interaction: discord.Interaction, id:str):
@@ -435,7 +436,7 @@ async def endbid(interaction: discord.Interaction, id:str):
 @tree.command(
   name = "search",
   description = "Search for an Item",
-  guild = discord.Object(id=guildID)
+  #guild = discord.Object(id=guildID)
 )
 async def search(interaction: discord.Interaction, item: str):
 
