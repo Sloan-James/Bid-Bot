@@ -20,7 +20,7 @@ class Bids:
 global guildID
 guildID = int(os.getenv("GUILD_ID"))
 #channelID = int(os.getenv("CHANNEL_ID"))
-channelID = int(discord.utils.get(client.get_all_channels(), name="auctions").id)
+channelID = int(discord.utils.get(self.client.get_all_channels(), name="auctions").id)
 
 class aclient(discord.Client):
   def __init__(self):
