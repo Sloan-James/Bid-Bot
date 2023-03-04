@@ -20,7 +20,6 @@ class Bids:
 global guildID
 #guildID = int(os.getenv("GUILD_ID"))
 #channelID = int(os.getenv("CHANNEL_ID"))
-guildID = int(1007067815280398357)
 
 
 class aclient(discord.Client):
@@ -155,7 +154,7 @@ class activeAuctions(discord.ui.View):
 
 
 #Sync Commands
-@tree.command(name='sync', description='Owner only', guild = discord.Object(id=guildID))
+@tree.command(name='sync', description='Owner only')
 async def sync(interaction: discord.Interaction):
   if interaction.user.id == 99969800821833728:
     await tree.sync()
