@@ -36,10 +36,6 @@ class aclient(discord.Client):
       global memberList
       global bidCommand
       auctions = {}
-      global channelID
-      channel = discord.utils.get(client.get_all_channels(), name="auctions")
-      channelID = channel.id
-      print(channelID)
       
     print(f"I have logged in as {self.user}.")
 
@@ -130,7 +126,8 @@ class placeABid(discord.ui.View):
   async def disableButton(self, messageID):
     button1 = [x for x in self.children if x.custom_id == "bidButton"][0]
     button1.disabled = True
-    channel = client.get_channel(channelID)
+    #channel = client.get_channel(channelID)
+    channel = discord.utils.get(client.get_all_channels(), name="auctions")
     message = await channel.fetch_message(messageID)
     await message.edit(view=self)
 
@@ -171,7 +168,7 @@ async def sync(interaction: discord.Interaction):
   #guild = discord.Object(id=guildID)
 )
 async def bid(interaction: discord.Interaction, id: str, price: int):
-  if interaction.channel_id != channelID: return
+  #if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
   await asyncio.sleep(4)
@@ -212,7 +209,7 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
   #guild = discord.Object(id=guildID)
 )
 async def activebids(interaction: discord.Interaction):
-  if interaction.channel_id != channelID: return
+  #if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
   await asyncio.sleep(4)
@@ -239,7 +236,7 @@ async def activebids(interaction: discord.Interaction):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def startbids(interaction: discord.Interaction, item: str):
-  if interaction.channel_id != channelID: return
+  #if interaction.channel_id != channelID: return
 
   await interaction.response.defer()
   await asyncio.sleep(4)
@@ -309,7 +306,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endbids(interaction: discord.Interaction):
-  if interaction.channel_id != channelID: return
+  #if interaction.channel_id != channelID: return
 
   global auctions
 
@@ -393,7 +390,7 @@ async def endbids(interaction: discord.Interaction):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endbid(interaction: discord.Interaction, id:str):
-  if interaction.channel_id != channelID: return
+  #if interaction.channel_id != channelID: return
 
   global auctions
 
