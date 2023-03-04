@@ -126,9 +126,8 @@ class placeABid(discord.ui.View):
   async def disableButton(self, messageID):
     button1 = [x for x in self.children if x.custom_id == "bidButton"][0]
     button1.disabled = True
-    channel = client.get_channel(channelID)
-    #channel = discord.utils.get(client.get_all_channels(), name="auctions")
-    print(channel)
+    #channel = client.get_channel(channelID)
+    channel = interaction.channel
     message = await channel.fetch_message(messageID)
     await message.edit(view=self)
 
