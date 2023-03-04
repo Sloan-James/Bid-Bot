@@ -30,7 +30,7 @@ class aclient(discord.Client):
   async def on_ready(self):
     await self.wait_until_ready()
     if not self.synced:
-      await tree.sync("""guild = discord.Object(id=guildID)""")
+      #await tree.sync("""guild = discord.Object(id=guildID)""")
       self.synced = True
       global auctions 
       global memberList
@@ -153,7 +153,14 @@ class activeAuctions(discord.ui.View):
       self.add_item(itemButton(x, y.itemName))
 
 
-
+#Sync Commands
+@tree.command(name='sync', description='Owner only')
+async def sync(interaction: discord.Interaction):
+  if interaction.user.id == 99969800821833728:
+    await tree.sync()
+    print('Command tree synced.')
+  else:
+    await interaction.response.send_message('You must be the owner to use this command!')
 
 # Place a Bid
 @tree.command(
