@@ -155,7 +155,7 @@ class activeAuctions(discord.ui.View):
 
 
 #Sync Commands
-@tree.command(name='sync', description='Owner only')
+@tree.command(name='sync', description='Owner only', guild = discord.Object(id=guildID))
 async def sync(interaction: discord.Interaction):
   if interaction.user.id == 99969800821833728:
     await tree.sync()
