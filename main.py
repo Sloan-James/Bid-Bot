@@ -37,7 +37,9 @@ class aclient(discord.Client):
       global bidCommand
       auctions = {}
       global channelID
-      channelID = int(discord.utils.get(client.get_all_channels(), name="auctions").id)
+      channel = int(discord.utils.get(client.get_all_channels(), name="auctions"))
+      channelID = channel.id
+      print(channelID)
       
     print(f"I have logged in as {self.user}.")
 
