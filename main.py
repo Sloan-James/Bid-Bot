@@ -36,6 +36,8 @@ class aclient(discord.Client):
       global memberList
       global bidCommand
       auctions = {}
+      global channelID
+      channelID = int(discord.utils.get(client.get_all_channels(), name="auctions").id)
       
     print(f"I have logged in as {self.user}.")
 
@@ -43,7 +45,7 @@ client = aclient()
 tree = app_commands.CommandTree(client)
 
 #Multiple Server Test
-channelID = int(discord.utils.get(client.get_all_channels(), name="auctions").id)
+
 
 CLEANR = re.compile('<.*?>')
 
