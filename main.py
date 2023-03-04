@@ -128,6 +128,7 @@ class placeABid(discord.ui.View):
     button1.disabled = True
     #channel = client.get_channel(channelID)
     channel = discord.utils.get(client.get_all_channels(), name="auctions")
+    print(channel)
     message = await channel.fetch_message(messageID)
     await message.edit(view=self)
 
