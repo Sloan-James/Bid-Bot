@@ -18,8 +18,9 @@ class Bids:
     self.button = str
 
 global guildID
-guildID = int(os.getenv("GUILD_ID"))
+#guildID = int(os.getenv("GUILD_ID"))
 #channelID = int(os.getenv("CHANNEL_ID"))
+guildID = int(1007067815280398357)
 
 
 class aclient(discord.Client):
@@ -30,7 +31,7 @@ class aclient(discord.Client):
   async def on_ready(self):
     await self.wait_until_ready()
     if not self.synced:
-      #await tree.sync("""guild = discord.Object(id=guildID)""")
+      await tree.sync(guild = discord.Object(id=guildID))
       self.synced = True
       global auctions 
       global memberList
