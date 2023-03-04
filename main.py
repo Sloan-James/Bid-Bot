@@ -30,7 +30,7 @@ class aclient(discord.Client):
   async def on_ready(self):
     await self.wait_until_ready()
     if not self.synced:
-      await tree.sync(guild = discord.Object(id=guildID))
+      #await tree.sync(guild = discord.Object(id=guildID))
       self.synced = True
       global auctions 
       global memberList
