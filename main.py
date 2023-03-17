@@ -114,8 +114,10 @@ class placeABid(discord.ui.View):
     self.auctions = auctions
     self.interaction = interaction
     self.button = button
+
+    self.auctions.get(self.id).message = interaction.message.id
+    
     if self.auctions.get(self.id) is not None:
-      #self.auctions.get(self.id).message = interaction.message.id
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
       button.disabled = True
@@ -291,7 +293,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
-  auctions.get(z).message = interaction.message.id
+  
 
   await interaction.followup.send("**" + item + "**", embed=embed, view = placeABid(z, item))
 
