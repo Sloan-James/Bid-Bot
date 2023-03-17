@@ -295,9 +295,9 @@ async def startbids(interaction: discord.Interaction, item: str):
   auctions.get(z).theView = placeABid(z, item)
   
 
-  await interaction.followup.send("**" + item + "**", embed=embed, view = auctions.get(z).theView)
+  message = await interaction.followup.send("**" + item + "**", embed=embed, view = auctions.get(z).theView)
 
-  auctions.get(z).message = interaction.message.id
+  auctions.get(z).message = message.id
 
 #Testing cancel auction
 @tree.command(
