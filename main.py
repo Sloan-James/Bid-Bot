@@ -202,10 +202,10 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 
 
 
-# List active bids
+# List active Auctions
 @tree.command(
   name = "activebids",
-  description = "List the currently active bids",
+  description = "List the currently active Auctions",
   #guild = discord.Object(id=guildID)
 )
 async def activebids(interaction: discord.Interaction):
@@ -219,7 +219,7 @@ async def activebids(interaction: discord.Interaction):
   activeBids = ""
 
   if auctions == {}:
-    await interaction.followup.send("There are no active Bids", ephemeral=True)
+    await interaction.followup.send("There are no active Auctions", ephemeral=True)
   else:
     #for x, y in auctions.items():
       #activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
@@ -295,13 +295,22 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   await interaction.followup.send("**" + item + "**", embed=embed, view = placeABid(z, item))
 
-
-
+#Testing cancel auction
+@tree.command(
+  name = "cancel",
+  description = "Cancel an Auction"
+)
+@discord.app_commands.checks.has_role("Leadership")
+async def cancel(interaction: discord.Interaction, id:str):
+  messageID = auctions[id].message
+  channel = interaction.channel
+  message = await channel.fetch_message(messageID)
+  await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.")
 
 #Ending Bids
 @tree.command(
   name = "endbids",
-  description = "End All Bids",
+  description = "End All Auctions",
   #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
@@ -385,7 +394,7 @@ async def endbids(interaction: discord.Interaction):
 #End Bid on specific Item
 @tree.command(
   name = "endbid",
-  description = "End Bid on item with id",
+  description = "End Auction on an item with id",
   #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
@@ -402,6 +411,8 @@ async def endbid(interaction: discord.Interaction, id:str):
     await interaction.response.defer()
     await asyncio.sleep(2)         
     
+    await auctions[id].theView.disableButton(auctions[id].message, interaction)
+
     currentTopBid = 0
     highestBid = 0
     count = 0
