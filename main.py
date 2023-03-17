@@ -113,7 +113,7 @@ class placeABid(discord.ui.View):
     self.interaction = interaction
     self.button = button
 
-    self.auctions.get(self.id).message = interaction.message.id
+    
     
 
     if self.auctions.get(self.id) is not None:
@@ -293,8 +293,11 @@ async def startbids(interaction: discord.Interaction, item: str):
   embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
 
   auctions.get(z).theView = placeABid(z, item)
+  
 
   await interaction.followup.send("**" + item + "**", embed=embed, view = auctions.get(z).theView)
+
+  auctions.get(z).message = interaction.message.id
 
 #Testing cancel auction
 @tree.command(
