@@ -109,7 +109,6 @@ class placeABid(discord.ui.View):
 
   @discord.ui.button(label="Place Bid", style=discord.ButtonStyle.green, custom_id = "bidButton")
   async def placeBid(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #Testing
     global auctions
     self.auctions = auctions
     self.interaction = interaction
