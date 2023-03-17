@@ -158,6 +158,7 @@ async def sync(interaction: discord.Interaction):
   if interaction.user.id == 99969800821833728:
     await tree.sync()
     print('Command tree synced.')
+    await interaction.response.send_message("Commands Synced")
   else:
     await interaction.response.send_message('You must be the owner to use this command!')
 
@@ -307,7 +308,7 @@ async def cancel(interaction: discord.Interaction, id:str):
 
   channel = interaction.channel
   message = await channel.fetch_message(auctions[id].message)
-  await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.")
+  await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.", view = None)
   
   await interaction.followup.send("**" + auctions[id].itemName + "** has been canceled")
 
