@@ -308,7 +308,7 @@ async def cancel(interaction: discord.Interaction, id:str):
 
   channel = interaction.channel
   message = await channel.fetch_message(auctions[id].message)
-  await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.", view = None)
+  await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.", embed = None, view = None)
   
   await interaction.followup.send("**" + auctions[id].itemName + "** has been canceled")
 
