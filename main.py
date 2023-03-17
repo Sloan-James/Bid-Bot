@@ -336,10 +336,8 @@ async def endbids(interaction: discord.Interaction):
     await asyncio.sleep(4)
 
     winners = []
-    #Testing
     for i in auctions.values():
       await i.theView.disableButton(i.message, interaction)
-    #End Testing
 
     for i in auctions.values():            
     
