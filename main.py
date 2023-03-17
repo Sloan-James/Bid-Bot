@@ -302,10 +302,17 @@ async def startbids(interaction: discord.Interaction, item: str):
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def cancel(interaction: discord.Interaction, id:str):
-  messageID = auctions[id].message
+  await interaction.response.defer(ephemeral=True)
+  await asyncio.sleep(4)
+
   channel = interaction.channel
-  message = await channel.fetch_message(messageID)
+  message = await channel.fetch_message(auctions[id].message)
   await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.")
+  
+  await interaction.followup.send("**" + auctions[id].itemName + "** has been canceled")
+
+  del auctions[id]
+  
 
 #Ending Bids
 @tree.command(
