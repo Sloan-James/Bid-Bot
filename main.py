@@ -105,8 +105,6 @@ class placeABid(discord.ui.View):
     
     self.id = id
     self.item = item
-    self.auctions.get(self.id).theView = self
-    
 
   @discord.ui.button(label="Place Bid", style=discord.ButtonStyle.green, custom_id = "bidButton")
   async def placeBid(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -116,7 +114,8 @@ class placeABid(discord.ui.View):
     self.button = button
 
     self.auctions.get(self.id).message = interaction.message.id
-    
+    self.auctions.get(self.id).theView = self
+
     if self.auctions.get(self.id) is not None:
       await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
