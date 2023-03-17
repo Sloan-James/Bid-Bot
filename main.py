@@ -395,7 +395,8 @@ async def endbids(interaction: discord.Interaction):
     
     await interaction.followup.send(winningBids)
 
-    auctions = {}
+    #auctions = {}
+    del auctions
     del winners
       
 
