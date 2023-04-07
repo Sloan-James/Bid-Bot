@@ -56,12 +56,12 @@ def cleanhtml(raw_html):
 class Bid_Modal(ui.Modal, title = "Default"):
   def __init__(self, id, item):
     super().__init__(timeout = None)
+    
     global auctions
     self.title = item[:45]
     self.id = id
     self.auctions = auctions
 
-    print(self.children)
     #if self.displayName in auctions.get(self.id).itemBidders:
       #ind = auctions.get(self.id).itemBidders.index(self.displayName)
       #message = "How much do you want to bid? Your current Bid: " + auctions.get(self.id).itemBids[ind]
