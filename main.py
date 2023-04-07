@@ -1,5 +1,6 @@
 import discord, asyncio
 from discord import ui, app_commands
+from discord.ui import ActionRow
 import random
 import string
 import requests
@@ -61,6 +62,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.id = id
     self.auctions = auctions
 
+    print(self.children)
     #if self.displayName in auctions.get(self.id).itemBidders:
       #ind = auctions.get(self.id).itemBidders.index(self.displayName)
       #message = "How much do you want to bid? Your current Bid: " + auctions.get(self.id).itemBids[ind]
@@ -127,7 +129,11 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+      row = ActionRow()
+      row.add_item(self.id)
+      row.add_item(self.item)
+      row.add_item(interaction.user.display_name)
+      await interaction.response.send_modal(Bid_Modal(row))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
