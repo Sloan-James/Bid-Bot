@@ -51,18 +51,16 @@ def cleanhtml(raw_html):
   cleantext = re.sub(CLEANR, '', raw_html)
   return cleantext
 
-def get_user_name(ctx):
-  return ctx.author.name
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  def __init__(self, id, item, ctx):
+  def __init__(self, id, item, interaction):
     super().__init__(timeout = None)
     global auctions
     self.title = item[:45]
     self.id = id
     self.auctions = auctions
-    self.displayName = get_user_name(ctx)
+    self.displayName = interaction.user.display_name
 
     if self.displayName in auctions.get(self.id).itemBidders:
       ind = auctions.get(self.id).itemBidders.index(self.displayName)
@@ -73,12 +71,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
    
     self.bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True) 
 
-  async def callback(self, interaction: discord.Interaction):
-    self.displayName = interaction.user.display_name
 
-
-  async def interaction_check(self, interaction: discord.Interaction):
-    self.displayName = interaction.user.display_name
   
   async def on_submit(self, interaction: discord.Interaction):
     #price = int(self.children[0].value) #What? can I change this to bidAmount now?
@@ -134,7 +127,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item, self.ctx))
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
@@ -156,7 +149,7 @@ class itemButton(discord.ui.Button):
     self.item = item
 
   async def callback(self, interaction):
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item, self.ctx))
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction))
 
 class activeAuctions(discord.ui.View):
   def __init__(self, auctions):
