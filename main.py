@@ -53,24 +53,25 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  global auctions
-
-  def __init__(self, id, item, displayName):
+  def __init__(self, id, item):
     super().__init__(timeout = None)
-    #global auctions
-    #self.title = item[:45]
-    #self.id = id
-    #self.displayName = displayName
-    #self.auctions = auctions
+    global auctions
+    self.title = item[:45]
+    self.id = id
+    self.auctions = auctions
 
-    if displayName in auctions.get(id).itemBidders:
-      ind = auctions.get(id).itemBidders.index(displayName)
-      message = "How much do you want to bid? Your current Bid: " + auctions.get(id).itemBids[ind]
+    if self.displayName in auctions.get(self.id).itemBidders:
+      ind = auctions.get(self.id).itemBidders.index(self.displayName)
+      message = "How much do you want to bid? Your current Bid: " + auctions.get(self.id).itemBids[ind]
     else:
       message = "How much do you want to bid?"
 
    
     self.bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True) 
+
+  async def callback(self, interaction: discord.Interaction):
+    self.displayName = interaction.user.display_name
+
 
   async def interaction_check(self, interaction: discord.Interaction):
     self.displayName = interaction.user.display_name
@@ -126,7 +127,6 @@ class placeABid(discord.ui.View):
     self.interaction = interaction
     self.button = button
 
-    
     
 
     if self.auctions.get(self.id) is not None:
