@@ -53,16 +53,16 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  def __init__(self, id, item, userID):
+  def __init__(self, id, item, displayName):
     super().__init__(timeout = None)
     global auctions
     self.title = item[:45]
     self.id = id
     self.auctions = auctions
-    self.userID = userID
+    self.displayName = displayName
 
-    if userID in auctions.get(self.id).BidderID:
-      ind = auctions.get(self.id).BidderID.index(userID)
+    if displayName in auctions.get(self.id).itemBidders:
+      ind = auctions.get(self.id).itemBidders.index(self.displayName)
       message = "How much do you want to bid? Your current Bid: " + self.auctions.get(self.id).itemBids[ind]
     else:
       message = "How much do you want to bid?"
@@ -126,7 +126,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.id))
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.display_name))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
@@ -148,7 +148,7 @@ class itemButton(discord.ui.Button):
     self.item = item
 
   async def callback(self, interaction):
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.id))
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.display_name))
 
 class activeAuctions(discord.ui.View):
   def __init__(self, auctions):
