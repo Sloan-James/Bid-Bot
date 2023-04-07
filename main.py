@@ -59,6 +59,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.title = item[:45]
     self.id = id
     self.auctions = auctions
+    self.displayName = self.custom_id
 
     if self.displayName in auctions.get(self.id).itemBidders:
       ind = auctions.get(self.id).itemBidders.index(self.displayName)
@@ -130,7 +131,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+      await interaction.response.send_modal(Bid_Modal(elf.id, self.item, custom_id = interaction.user.diplay_name))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
@@ -152,7 +153,7 @@ class itemButton(discord.ui.Button):
     self.item = item
 
   async def callback(self, interaction):
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item, custom_id = interaction.user.diplay_name))
 
 class activeAuctions(discord.ui.View):
   def __init__(self, auctions):
