@@ -60,7 +60,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.title = info[1][:45]#item[:45]
     self.id = info[0]#id
     self.auctions = auctions
-    self.displayName = info[2]#interaction.user.display_name
+    self.displayName = info[2].user.display_name#interaction.user.display_name
 
     if self.displayName in auctions.get(self.id).itemBidders:
       ind = auctions.get(self.id).itemBidders.index(self.displayName)
