@@ -69,13 +69,13 @@ class Bid_Modal(ui.Modal, title = "Default"):
 
     #message = "How much would you like to bid?"
 
-    self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True) 
+  bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True) 
 
 
   
   async def on_submit(self, interaction: discord.Interaction):
-    #price = int(self.children[0].value) #What? can I change this to bidAmount now?
-    price = int(self.bidAmount)
+    price = int(self.children[0].value) #What? can I change this to bidAmount now?
+    #price = int(bidAmount)
     if interaction.user.id in self.auctions.get(self.id).BidderID:
       index = self.auctions.get(self.id).BidderID.index(interaction.user.id)
       if interaction.user.display_name == self.auctions.get(self.id).itemBidders[index]:
