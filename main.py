@@ -57,7 +57,8 @@ class Bid_Modal(ui.Modal, title = "Default"):
   def __init__(self, info):
     super().__init__(timeout = None)
     global auctions
-    self.title = info[1][:45]#item[:45]
+    self.title = info[1]#item[:45]
+    print(self.title)
     self.id = info[0]#id
     self.auctions = auctions
     self.displayName = info[2].user.display_name#interaction.user.display_name
