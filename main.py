@@ -130,7 +130,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.display_name))
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
@@ -152,7 +152,7 @@ class itemButton(discord.ui.Button):
     self.item = item
 
   async def callback(self, interaction):
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.display_name))
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
 
 class activeAuctions(discord.ui.View):
   def __init__(self, auctions):
