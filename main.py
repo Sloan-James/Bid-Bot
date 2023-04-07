@@ -67,9 +67,9 @@ class Bid_Modal(ui.Modal, title = "Default"):
     #else:
       #message = "How much do you want to bid?"
 
-    message = "How much would you like to bid?"
+    #message = "How much would you like to bid?"
 
-    self.bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True) 
+    self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True) 
 
 
   
