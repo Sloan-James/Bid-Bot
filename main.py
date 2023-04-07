@@ -126,7 +126,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.display_name))
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item, self.interaction.user.display_name))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
