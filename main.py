@@ -63,9 +63,9 @@ class Bid_Modal(ui.Modal, title = "Default"):
     #self.displayName = displayName
     #self.auctions = auctions
 
-    if self.displayName in auctions.get(self.id).itemBidders:
-      ind = auctions.get(self.id).itemBidders.index(self.displayName)
-      message = "How much do you want to bid? Your current Bid: " + self.auctions.get(self.id).itemBids[ind]
+    if displayName in auctions.get(id).itemBidders:
+      ind = auctions.get(id).itemBidders.index(displayName)
+      message = "How much do you want to bid? Your current Bid: " + auctions.get(id).itemBids[ind]
     else:
       message = "How much do you want to bid?"
 
