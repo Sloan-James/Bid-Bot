@@ -58,9 +58,9 @@ class Bid_Modal(ui.Modal, title = "Default"):
   def __init__(self, id, item, displayName):
     super().__init__(timeout = None)
     #global auctions
-    self.title = item[:45]
-    self.id = id
-    self.displayName = displayName
+    #self.title = item[:45]
+    #self.id = id
+    #self.displayName = displayName
     #self.auctions = auctions
 
     if self.displayName in auctions.get(self.id).itemBidders:
