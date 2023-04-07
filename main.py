@@ -1,6 +1,5 @@
 import discord, asyncio
 from discord import ui, app_commands
-from discord.ui import ActionRow
 import random
 import string
 import requests
@@ -129,11 +128,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      row = ActionRow()
-      row.add_item(self.id)
-      row.add_item(self.item)
-      row.add_item(interaction.user.display_name)
-      await interaction.response.send_modal(Bid_Modal(row))
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
