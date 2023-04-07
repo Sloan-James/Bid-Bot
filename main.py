@@ -53,18 +53,27 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  def __init__(self, id, item):
+  def __init__(self, id, item, userID):
     super().__init__(timeout = None)
     global auctions
     self.title = item[:45]
     self.id = id
     self.auctions = auctions
+    self.userID = userID
 
+    if userID in auctions.get(self.id).id:
+      ind = auctions.get(self.id).BidderID.index(userID)
+      message = "How much do you want to bid? Your current Bid: " + self.auctions.get(self.id).itemBids[ind]
+    else:
+      message = "How much do you want to bid?"
 
-  bidAmount = ui.TextInput(label = "How much?", style = discord.TextStyle.short, placeholder = "100000", required = True) 
+    self.bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True) 
+
+  
   
   async def on_submit(self, interaction: discord.Interaction):
-    price = int(self.children[0].value)
+    #price = int(self.children[0].value) #What? can I change this to bidAmount now?
+    price = int(self.bidAmount)
     if interaction.user.id in self.auctions.get(self.id).BidderID:
       index = self.auctions.get(self.id).BidderID.index(interaction.user.id)
       if interaction.user.display_name == self.auctions.get(self.id).itemBidders[index]:
@@ -117,7 +126,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.id))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
@@ -139,7 +148,7 @@ class itemButton(discord.ui.Button):
     self.item = item
 
   async def callback(self, interaction):
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction.user.id))
 
 class activeAuctions(discord.ui.View):
   def __init__(self, auctions):
@@ -393,7 +402,10 @@ async def endbids(interaction: discord.Interaction):
     except discord.Forbidden:
       pass
     
-    await interaction.followup.send(winningBids)
+    try:
+      await interaction.followup.send(winningBids)
+    except discord.HTTPException:
+      pass
 
     auctions = {}
     del winners
