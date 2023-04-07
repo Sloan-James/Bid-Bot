@@ -128,7 +128,7 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      info = {self.id, self.item, interaction}
+      info = [self.id, self.item, interaction]
       #await interaction.response.send_modal(Bid_Modal(self.id, self.item, interaction))
       await interaction.response.send_modal(Bid_Modal(info))
     else:
