@@ -76,7 +76,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
   
   async def on_submit(self, interaction: discord.Interaction):
     #price = int(self.children[0].value) #What? can I change this to bidAmount now?
-    price = self.bidAmount.value
+    price = int(self.bidAmount.value)
     if interaction.user.id in self.auctions.get(self.id).BidderID:
       index = self.auctions.get(self.id).BidderID.index(interaction.user.id)
       if interaction.user.display_name == self.auctions.get(self.id).itemBidders[index]:
