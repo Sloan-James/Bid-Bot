@@ -61,9 +61,9 @@ class Bid_Modal(ui.Modal, title = "Default"):
     super().__init__(timeout = None)
     #global auctions
     if oldbid == None:
-      self.bidAmount = discord.ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+      self.bidAmount = discord.ui.TextInput(label = "How much?", style = discord.TextStyle.short, placeholder = "100000", required = True)
     else:
-      self.bidAmount = discord.ui.TextInput(label = "How much would you like to bid? Your previous bid: {oldbid}", style = discord.TextStyle.short, placeholder = "100000", required = True)
+      self.bidAmount = discord.ui.TextInput(label = "How much? Previous bid: {oldbid}", style = discord.TextStyle.short, placeholder = "100000", required = True)
     self.add_item(self.bidAmount)
     self.title = item[:45]
     self.id = id
