@@ -128,7 +128,7 @@ class placeABid(discord.ui.View):
     self.interaction = interaction
     self.button = button
 
-    
+    price = None
 
     if self.auctions.get(self.id) is not None:
       if interaction.user.display_name in auctions.get(self.id).itemBidders:
@@ -154,6 +154,8 @@ class itemButton(discord.ui.Button):
 
     self.id = id
     self.item = item
+
+  price = None
 
   async def callback(self, interaction):
     if interaction.user.display_name in auctions.get(self.id).itemBidders:
