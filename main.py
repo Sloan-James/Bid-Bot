@@ -63,7 +63,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
     if oldbid == None:
       self.bidAmount = discord.ui.TextInput(label = "How much?", style = discord.TextStyle.short, placeholder = "100000", required = True)
     else:
-      self.bidAmount = discord.ui.TextInput(label = "How much? Previous bid: " + int(oldbid), style = discord.TextStyle.short, placeholder = "100000", required = True)
+      self.bidAmount = discord.ui.TextInput(label = "How much? Previous bid: {:,}".format(oldbid), style = discord.TextStyle.short, placeholder = "100000", required = True)
     self.add_item(self.bidAmount)
     self.title = item[:45]
     self.id = id
