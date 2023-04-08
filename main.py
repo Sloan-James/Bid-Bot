@@ -54,7 +54,7 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  
+   
   
   def __init__(self, id, item, oldbid):
     super().__init__(timeout = None)
