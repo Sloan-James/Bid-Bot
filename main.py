@@ -57,6 +57,11 @@ class Bid_Modal(ui.Modal, title = "Default"):
    
   
   def __init__(self, id, item, oldbid):
+    if self.oldbid == None:
+      self.message = "How much do you want to bid?"
+    else:
+      self.message = "How much do you want to bid? Your current Bid: {oldbid}"
+    self.bidAmount = ui.TextInput(label = self.message, style = discord.TextStyle.short, placeholder = "100000", required = True)
     super().__init__(timeout = None)
     
     global auctions
@@ -65,12 +70,9 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.auctions = auctions
     self.oldbid = oldbid
 
-    if self.oldbid == None:
-      message = "How much do you want to bid?"
-    else:
-      message = "How much do you want to bid? Your current Bid: {self.oldbid}"
+    
 
-    self.bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True)
+  
 
   
   async def on_submit(self, interaction: discord.Interaction):
