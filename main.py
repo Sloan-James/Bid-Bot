@@ -66,10 +66,11 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.callback()
     
   async def callback(self):
-    if self.oldbid == None:
-      self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
-    else:
-      self.bidAmount = ui.TextInput(label = "How much would you like to bid? Your current bid: {oldbid}", style = discord.TextStyle.short, placeholder = "100000", required = True) 
+    print(self.data.components)
+    #if self.oldbid == None:
+      #self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+    #else:
+      #self.bidAmount = ui.TextInput(label = "How much would you like to bid? Your current bid: {oldbid}", style = discord.TextStyle.short, placeholder = "100000", required = True) 
 
    
 
