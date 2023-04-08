@@ -58,7 +58,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
   #bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
 
   def __init__(self, id, item, oldbid):
-    self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+    #self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
     super().__init__(timeout = None)
     global auctions
     self.title = item[:45]
