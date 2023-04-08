@@ -54,13 +54,16 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  def __init__(self, id, item):
+  bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+  
+  def __init__(self, id, item, oldbid):
     super().__init__(timeout = None)
     
     global auctions
     self.title = item[:45]
     self.id = id
     self.auctions = auctions
+    self.oldbid = oldbid
 
     #if self.displayName in auctions.get(self.id).itemBidders:
       #ind = auctions.get(self.id).itemBidders.index(self.displayName)
@@ -70,7 +73,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
 
     #message = "How much would you like to bid?"
 
-  bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True) 
+   
 
 
   
@@ -128,7 +131,10 @@ class placeABid(discord.ui.View):
     
 
     if self.auctions.get(self.id) is not None:
-      await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+      if interaction.user.display_name in auctions.get(self.id).itemBidders:
+        ind = auctions.get(self.id).itemBidders.index(interaction.user.display_name)
+        price = auctions.get(self.id).itemBids[ind]
+      await interaction.response.send_modal(Bid_Modal(self.id, self.item, price))
     else:
       button.disabled = True
       await interaction.response.edit_message(view=self)
@@ -150,7 +156,10 @@ class itemButton(discord.ui.Button):
     self.item = item
 
   async def callback(self, interaction):
-    await interaction.response.send_modal(Bid_Modal(self.id, self.item))
+    if interaction.user.display_name in auctions.get(self.id).itemBidders:
+        ind = auctions.get(self.id).itemBidders.index(interaction.user.display_name)
+        price = auctions.get(self.id).itemBids[ind]
+    await interaction.response.send_modal(Bid_Modal(self.id, self.item, price))
 
 class activeAuctions(discord.ui.View):
   def __init__(self, auctions):
