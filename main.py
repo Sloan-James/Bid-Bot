@@ -63,7 +63,7 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.id = id
     self.auctions = auctions
     self.oldbid = oldbid
-    self.callback(self)
+    self.callback()
     
   async def callback(self):
     if self.oldbid == None:
