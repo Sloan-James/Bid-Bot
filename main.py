@@ -54,7 +54,7 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True)
+  
   
   def __init__(self, id, item, oldbid):
     super().__init__(timeout = None)
@@ -65,9 +65,9 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.oldbid = oldbid
 
     if self.oldbid == None:
-      self.message = "How much do you want to bid?"
+      self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
     else:
-      self.message = "How much do you want to bid? Your current Bid: {oldbid}"
+      self.bidAmount = ui.TextInput(label = "How much would you like to bid? Your current bid: {self.oldbid}", style = discord.TextStyle.short, placeholder = "100000", required = True)
     
 
   
