@@ -55,8 +55,8 @@ def cleanhtml(raw_html):
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
 
-  bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
-  
+  #bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+
   def __init__(self, id, item, oldbid):
     
     super().__init__(timeout = None)
@@ -65,16 +65,14 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.id = id
     self.auctions = auctions
     self.oldbid = oldbid
-    print(self.data.components)
-    
-  
-    
-    #if self.oldbid == None:
-      #self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
-    #else:
-      #self.bidAmount = ui.TextInput(label = "How much would you like to bid? Your current bid: {oldbid}", style = discord.TextStyle.short, placeholder = "100000", required = True) 
 
-  bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+  
+
+    if self.oldbid == None:
+      self.bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+    else:
+      self.bidAmount = ui.TextInput(label = "How much would you like to bid? Your current bid: {oldbid}", style = discord.TextStyle.short, placeholder = oldbid, required = True) 
+
 
   
   async def on_submit(self, interaction: discord.Interaction):
