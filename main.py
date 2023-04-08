@@ -54,7 +54,7 @@ def cleanhtml(raw_html):
 
 #Modal window for Bids
 class Bid_Modal(ui.Modal, title = "Default"):
-  bidAmount = ui.TextInput(label = "How much would you like to bid?", style = discord.TextStyle.short, placeholder = "100000", required = True)
+  
   
   def __init__(self, id, item, oldbid):
     super().__init__(timeout = None)
@@ -65,21 +65,17 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.auctions = auctions
     self.oldbid = oldbid
 
-    #if self.displayName in auctions.get(self.id).itemBidders:
-      #ind = auctions.get(self.id).itemBidders.index(self.displayName)
-      #message = "How much do you want to bid? Your current Bid: " + auctions.get(self.id).itemBids[ind]
-    #else:
-      #message = "How much do you want to bid?"
+    if self.oldbid == None:
+      message = "How much do you want to bid?"
+    else:
+      message = "How much do you want to bid? Your current Bid: {self.oldbid}"
 
-    #message = "How much would you like to bid?"
-
-   
-
+    self.bidAmount = ui.TextInput(label = message, style = discord.TextStyle.short, placeholder = "100000", required = True)
 
   
   async def on_submit(self, interaction: discord.Interaction):
-    price = int(self.children[0].value) #What? can I change this to bidAmount now?
-    #price = int(bidAmount)
+    #price = int(self.children[0].value) #What? can I change this to bidAmount now?
+    price = int(self.bidAmount)
     if interaction.user.id in self.auctions.get(self.id).BidderID:
       index = self.auctions.get(self.id).BidderID.index(interaction.user.id)
       if interaction.user.display_name == self.auctions.get(self.id).itemBidders[index]:
