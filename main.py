@@ -2,10 +2,13 @@ import discord, asyncio
 from discord import ui, app_commands
 import random
 import string
+from discord import member
 import requests
 from bs4 import BeautifulSoup
 import re
-import os
+import os 
+import sqlite3
+from datetime import date
 
 class Bids:
   def __init__(self):
@@ -19,13 +22,15 @@ class Bids:
 
 global guildID
 #guildID = int(os.getenv("GUILD_ID"))
-channelID = int(os.getenv("CHANNEL_ID"))
+#channelID = int(os.getenv("CHANNEL_ID"))
 
+#print(f"{os.getenv("DISCORD_TOKEN")}")
 
 class aclient(discord.Client):
   def __init__(self):
     super().__init__(intents=discord.Intents.default())
     self.synced = False
+    self.intents.message_content = True
 
   async def on_ready(self):
     await self.wait_until_ready()
@@ -70,7 +75,10 @@ class Bid_Modal(ui.Modal, title = "Default"):
     self.auctions = auctions
   
     
- 
+
+
+
+
 
 
   
@@ -223,11 +231,11 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 
 # List active Auctions
 @tree.command(
-  name = "activebids",
+  name = "activeauctions",
   description = "List the currently active Auctions",
   #guild = discord.Object(id=guildID)
 )
-async def activebids(interaction: discord.Interaction):
+async def activeauctions(interaction: discord.Interaction):
   #if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
@@ -235,26 +243,26 @@ async def activebids(interaction: discord.Interaction):
 
   global auctions
 
-  activeBids = ""
+  activeAuctions = ""
 
   if auctions == {}:
     await interaction.followup.send("There are no active Auctions", ephemeral=True)
   else:
     #for x, y in auctions.items():
-      #activeBids = activeBids + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
+      #activeAuctions = activeAuctions + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
 
     await interaction.followup.send(view = activeAuctions(auctions), ephemeral=True)
     
 
 
-# Start bids
+# Start an auction
 @tree.command(
-  name = "startbids",
-  description = "Start a bid",
+  name = "startauction",
+  description = "Start an Auction",
   #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
-async def startbids(interaction: discord.Interaction, item: str):
+async def startauction(interaction: discord.Interaction, item: str):
   #if interaction.channel_id != channelID: return
 
   await interaction.response.defer()
@@ -309,7 +317,7 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   bidCommand = '**/bid id:' + z + ' price: **'
 
-  embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n>>> To BID copy/paste the entire example below and place your offer within the provided box.\n" + bidCommand + '\n')
+  embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n**BidBot Item ID: " + z + "**\n")
 
   auctions.get(z).theView = placeABid(z, item)
   
@@ -318,7 +326,8 @@ async def startbids(interaction: discord.Interaction, item: str):
 
   auctions.get(z).message = message.id
 
-#Testing cancel auction
+
+#Cancel an auction
 @tree.command(
   name = "cancel",
   description = "Cancel an Auction"
@@ -339,12 +348,12 @@ async def cancel(interaction: discord.Interaction, id:str):
 
 #Ending Bids
 @tree.command(
-  name = "endbids",
+  name = "endauctions",
   description = "End All Auctions",
   #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
-async def endbids(interaction: discord.Interaction):
+async def endauctions(interaction: discord.Interaction):
   #if interaction.channel_id != channelID: return
 
   global auctions
@@ -352,7 +361,7 @@ async def endbids(interaction: discord.Interaction):
   currentTopBid = 0        
 
   if auctions == {}:
-    await interaction.response.send_message("There are no active Bids")
+    await interaction.response.send_message("There are no active Auctions")
   else:
     await interaction.response.defer()
     await asyncio.sleep(4)
@@ -361,8 +370,10 @@ async def endbids(interaction: discord.Interaction):
     for i in auctions.values():
       await i.theView.disableButton(i.message, interaction)
 
-    for i in auctions.values():            
-    
+    for i in auctions.values():
+      
+      key = next(k for k, v in auctions.items() if v == i)
+
       currentTopBid = 0
       highestBid = 0
       count = 0
@@ -390,6 +401,24 @@ async def endbids(interaction: discord.Interaction):
           
       winners.append([i.itemName, i.itemBidders[currentTopBid], prevHighest + 1, i.BidderID[currentTopBid]])
       
+      connection = sqlite3.connect("database.db")
+      cursor = connection.cursor()
+      today = date.today().strftime('%Y-%m-%d')
+
+      cursor.execute("""INSERT INTO auctions ('id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
+        VALUES (?, ?, ?, ?, ?) """, (key, today, i.itemName, i.itemBidders[currentTopBid], prevHighest + 1))
+
+      comb = list(zip(i.itemBidders, i.itemBids))
+      data = []
+      for item in comb:
+          data.append((key,) + item)
+
+      cursor.executemany("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
+        VALUES (?, ?, ?)""", (data))
+
+      connection.commit()
+      connection.close()
+
       try:
         await interaction.user.send('**' + i.itemName + ':**\n' + str(i.BidderID) + '\n' + str(i.itemBidders) + '\n' + str(i.itemBids))
       except discord.Forbidden:
@@ -417,6 +446,7 @@ async def endbids(interaction: discord.Interaction):
     except discord.HTTPException:
       pass
 
+    
     auctions = {}
     del winners
       
@@ -424,12 +454,12 @@ async def endbids(interaction: discord.Interaction):
 
 #End Bid on specific Item
 @tree.command(
-  name = "endbid",
+  name = "endauction",
   description = "End Auction on an item with id",
   #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
-async def endbid(interaction: discord.Interaction, id:str):
+async def endauction(interaction: discord.Interaction, id:str):
   #if interaction.channel_id != channelID: return
 
   global auctions
@@ -437,7 +467,7 @@ async def endbid(interaction: discord.Interaction, id:str):
   currentTopBid = 0        
 
   if id not in auctions:
-    await interaction.response.send_message("There are no active Bid with that ID")
+    await interaction.response.send_message("There are no active Auction with that ID")
   else:
     await interaction.response.defer()
     await asyncio.sleep(2)         
@@ -463,7 +493,7 @@ async def endbid(interaction: discord.Interaction, id:str):
             prevHighest = l
             
         count = count + 1  
-      await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid] + "** for **{:,}** platinum".format(prevHighest + 1))
+      await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid]  + "** for **{:,}** platinum".format(prevHighest + 1))
   
       try:
         await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids) + '\nWinnner:\n' + auctions[id].itemName + '\n' + auctions[id].itemBidders[currentTopBid] + '\n{:,}'.format(prevHighest +1))
@@ -479,12 +509,27 @@ async def endbid(interaction: discord.Interaction, id:str):
     else:
       await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
   
-   
-    
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+    today = date.today().strftime('%Y-%m-%d')
+
+    cursor.execute("""INSERT INTO auctions ('id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
+        VALUES (?, ?, ?, ?, ?) """, (key, today, auctions[id].itemName, auctions[id].itemBidders[currentTopBid], prevHighest + 1))
+
+    comb = list(zip(i.itemBidders, i.itemBids))
+    data = []
+    for item in comb:
+        data.append((key,) + item)
+
+    cursor.execute("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
+        VALUES (?, ?, ?)""", (key, auctions[id].itemBidders, auctions[id].itemBids))
+
+    connection.commit()
+    connection.close()
 
     del auctions[id]
 
-
+      
 #Item Lookup
 @tree.command(
   name = "search",
