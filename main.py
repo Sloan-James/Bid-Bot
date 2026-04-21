@@ -178,15 +178,6 @@ class activeAuctions(discord.ui.View):
       self.add_item(itemButton(x, y.itemName))
 
 
-#Sync Commands
-@tree.command(name='sync', description='Owner only')
-async def sync(interaction: discord.Interaction):
-  if interaction.user.id == 99969800821833728:
-    await tree.sync()
-    print('Command tree synced.')
-    await interaction.response.send_message("Commands Synced")
-  else:
-    await interaction.response.send_message('You must be the owner to use this command!')
 
 # Place a Bid
 @tree.command(
@@ -195,7 +186,6 @@ async def sync(interaction: discord.Interaction):
   #guild = discord.Object(id=guildID)
 )
 async def bid(interaction: discord.Interaction, id: str, price: int):
-  #if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
   await asyncio.sleep(4)
@@ -232,11 +222,9 @@ async def bid(interaction: discord.Interaction, id: str, price: int):
 # List active Auctions
 @tree.command(
   name = "activeauctions",
-  description = "List the currently active Auctions",
-  #guild = discord.Object(id=guildID)
+  description = "List the currently active Auctions"
 )
 async def activeauctions(interaction: discord.Interaction):
-  #if interaction.channel_id != channelID: return
 
   await interaction.response.defer(ephemeral=True)
   await asyncio.sleep(4)
@@ -248,9 +236,6 @@ async def activeauctions(interaction: discord.Interaction):
   if auctions == {}:
     await interaction.followup.send("There are no active Auctions", ephemeral=True)
   else:
-    #for x, y in auctions.items():
-      #activeAuctions = activeAuctions + '\n**' + y.itemName + "**\n" + "/bid id:" + x + " price: \n"
-
     await interaction.followup.send(view = activeAuctions(auctions), ephemeral=True)
     
 
@@ -258,12 +243,10 @@ async def activeauctions(interaction: discord.Interaction):
 # Start an auction
 @tree.command(
   name = "startauction",
-  description = "Start an Auction",
-  #guild = discord.Object(id=guildID)
+  description = "Start an Auction"
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def startauction(interaction: discord.Interaction, item: str):
-  #if interaction.channel_id != channelID: return
 
   await interaction.response.defer()
   await asyncio.sleep(4)
@@ -350,11 +333,9 @@ async def cancel(interaction: discord.Interaction, id:str):
 @tree.command(
   name = "endauctions",
   description = "End All Auctions",
-  #guild = discord.Object(id=guildID)
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endauctions(interaction: discord.Interaction):
-  #if interaction.channel_id != channelID: return
 
   global auctions
 
@@ -373,7 +354,6 @@ async def endauctions(interaction: discord.Interaction):
     for i in auctions.values():
       
       key = next(k for k, v in auctions.items() if v == i)
-
       currentTopBid = 0
       highestBid = 0
       count = 0
@@ -405,16 +385,16 @@ async def endauctions(interaction: discord.Interaction):
       cursor = connection.cursor()
       today = date.today().strftime('%Y-%m-%d')
 
-      cursor.execute("""INSERT INTO auctions ('id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
-        VALUES (?, ?, ?, ?, ?) """, (key, today, i.itemName, i.itemBidders[currentTopBid], prevHighest + 1))
+      cursor.execute("""INSERT INTO auctions ('id', 'seq_id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
+        VALUES (?,(SELECT COALESCE(MAX(seq_id), 0) + 1 FROM auctions WHERE id = ?), ?, ?, ?, ?) RETURNING seq_id""", (key, key, today, i.itemName, i.itemBidders[currentTopBid], prevHighest + 1))
 
       comb = list(zip(i.itemBidders, i.itemBids))
       data = []
       for item in comb:
-          data.append((key,) + item)
+          data.append((key,cursor.fetchone()[0]) + item)
 
-      cursor.executemany("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
-        VALUES (?, ?, ?)""", (data))
+      cursor.executemany("""INSERT INTO bids ('auction_id', 'seq_id', 'bidder_name', 'bid_amount')
+        VALUES (?,?, ?, ?)""", (data))
 
       connection.commit()
       connection.close()
@@ -455,12 +435,10 @@ async def endauctions(interaction: discord.Interaction):
 #End Bid on specific Item
 @tree.command(
   name = "endauction",
-  description = "End Auction on an item with id",
-  #guild = discord.Object(id=guildID)
+  description = "End Auction on an item with id"
 )
 @discord.app_commands.checks.has_role("Leadership")
 async def endauction(interaction: discord.Interaction, id:str):
-  #if interaction.channel_id != channelID: return
 
   global auctions
 
@@ -513,16 +491,19 @@ async def endauction(interaction: discord.Interaction, id:str):
     cursor = connection.cursor()
     today = date.today().strftime('%Y-%m-%d')
 
-    cursor.execute("""INSERT INTO auctions ('id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
-        VALUES (?, ?, ?, ?, ?) """, (key, today, auctions[id].itemName, auctions[id].itemBidders[currentTopBid], prevHighest + 1))
+    cursor.execute("""INSERT INTO auctions ('id', 'seq_id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
+        VALUES (?,(SELECT COALESCE(MAX(seq_id), 0) + 1 FROM auctions WHERE id = ?, ?, ?, ?, ?) RETURNING seq_id""", (key, key, today, i.itemName, i.itemBidders[currentTopBid], prevHighest + 1))
 
-    comb = list(zip(i.itemBidders, i.itemBids))
+    comb = list(zip(auctions[id].itemBidders, auctions[id].itemBids))
     data = []
     for item in comb:
-        data.append((key,) + item)
+        data.append((key,cursor.fetchone()[0]) + item)
 
-    cursor.execute("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
-        VALUES (?, ?, ?)""", (key, auctions[id].itemBidders, auctions[id].itemBids))
+   # cursor.execute("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
+   #     VALUES (?, ?, ?)""", (key, auctions[id].itemBidders, auctions[id].itemBids))
+
+    cursor.executemany("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
+        VALUES (?, ?, ?)""", (data))
 
     connection.commit()
     connection.close()
