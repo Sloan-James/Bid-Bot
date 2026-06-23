@@ -108,6 +108,7 @@ async def item_autocomplete(interaction: discord.Interaction, current: str) -> l
                         break
 
                 if not raw_text:
+                    print("No text content found in MCP response.")
                     return []
 
                
@@ -433,6 +434,10 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
   replaceSpaces = replaceSpaces.replace(' ',ch1)
   replaceSpaces = replaceSpaces.replace('\'',ch2) 
 
+  EQicon = None
+  itemStats = ''
+  txt = None
+
   if extracted_id is not None and extracted_id.isdigit():
       
     itemName = display_name
@@ -471,11 +476,11 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
       if test != -1:
           test2 = response.text[test:test+20].split('"')
           item_id = test2[0].split('/')
-          url = "https://lucy.allakhazam.com/item.html?id=" + item_id[2]
+          link = "https://lucy.allakhazam.com/item.html?id=" + item_id[2]
           s = requests.Session()
-          s.post(url)
+          s.post(link)
 
-          response = s.get(url)
+          response = s.get(link)
           if response.status_code != 404:
               thing = BeautifulSoup(response.text, features="lxml")
               itemName = thing.find('table', {"class" : "shottopbg"})
@@ -527,16 +532,23 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
         if noBids == None:
             #await interaction.followup.send(winnerAnnounceInteraction)
             embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + z + "**\n\n" + winnerAnnounceInteraction + "\n")
-            if EQicon:
+            if EQicon != None:
                 embed.set_thumbnail(url=EQicon)
             try:
                 await message.edit(content=winnerAnnounceInteraction, embed = embed, view = None)
             except discord.NotFound:
                 interaction.user.send("Message could not be found in order to edit.")
                 pass
+            except:
+                print("Error editing message for auction end.")
+                pass
             try:
                 await interaction.user.send(dataInteraction)
             except discord.Forbidden:
+                print("Error sending dataInteraction to officer.")
+                pass
+            except:
+                print("Error sending dataInteraction to officer.")
                 pass
 
             user = await client.fetch_user(winner)
@@ -548,9 +560,13 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
         else:
             #await interaction.followup.send(noBids)
             embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + z + "**\n\n" + noBids + "\n")
-            if EQicon:
+            if EQicon != None:
                 embed.set_thumbnail(url=EQicon)
-            await message.edit(content=noBids, embed = embed, view = None)
+            try:
+                await message.edit(content=noBids, embed = embed, view = None)
+            except:
+                print("Error editing message for auction end.")
+                pass
 
     else:
         await interaction.user.send("**" + display_name + "** with ID: " + z + " was previously cancelled after timer expired. This message can be ignored if accurate")
@@ -561,7 +577,7 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
         embed.add_field(name="Average Krono Price", value = f"{krono_price:,.2f}", inline= False)
     elif plat_price != None:
         embed.add_field(name="Average Plat Price", value = f"{plat_price:,.2f}", inline= False)'''
-    if EQicon:
+    if EQicon != None:
        embed.set_thumbnail(url=EQicon)
     auctions.get(z).theView = placeABid(z, display_name)
     message = await interaction.followup.send("**" + display_name + "**", embed=embed, view = auctions.get(z).theView)
@@ -663,8 +679,51 @@ async def endauctions(interaction: discord.Interaction):
 
     
   auctions = {}
-      
 
+#Search winners by Bid_id      
+@tree.command(
+  name = "searchwinner",
+  description = "Search auctions db for info"
+)
+@discord.app_commands.checks.has_role("Officer")
+async def searchwinner(interaction: discord.Interaction, bidid:str):
+
+
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+    key = bidid
+
+    cursor.execute("""SELECT * FROM auctions WHERE id = ?""", (key,))
+
+    result = cursor.fetchall()
+    if result:
+        response = ""
+        for row in result:
+            response += f"Auction ID: {row[0]}, Date: {row[2]}, Item: {row[3]}, Winner: {row[4]}, Winning Price: {row[5]}\n"
+        await interaction.response.send_message(response, ephemeral=True)
+    else:
+        await interaction.response.send_message("No auctions found for that ID", ephemeral=True)
+
+#Search winners of an item    
+@tree.command(
+  name = "searchitem",
+  description = "Search auctions db for info"
+)
+@discord.app_commands.checks.has_role("Officer")
+async def searchitem(interaction: discord.Interaction, itemname:str):
+
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+    cursor.execute("""SELECT * FROM auctions WHERE item_name = ?""", (itemname,))
+    result = cursor.fetchall()
+    if result:
+        response = ""
+        for row in result:
+            response += f"Auction ID: {row[0]}, Date: {row[2]}, Item: {row[3]}, Winner: {row[4]}, Winning Price: {row[5]}\n"
+        await interaction.response.send_message(response, ephemeral=True)
+
+    else:
+        await interaction.response.send_message("No auctions found for that item. Use exact item name", ephemeral=True)
 
 #End Bid on specific Item
 @tree.command(
