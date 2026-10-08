@@ -13,12 +13,16 @@ from datetime import date
 import time
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+import subprocess
+import sys
 
 
 
 class Bids:
   def __init__(self):
     self.itemName = str
+    self.itemStats = str
+    self.EQicon = str
     self.BidderID = []
     self.itemBids = []
     self.itemBidders = []
@@ -31,13 +35,70 @@ global guildID
 #channelID = int(os.getenv("CHANNEL_ID"))
 
 #print(f"{os.getenv("DISCORD_TOKEN")}")
+#MCP Client Setup
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MCP_SERVER_DIR = os.path.join(BASE_DIR, "MCP")
+INDEX_JS_PATH = os.path.join(MCP_SERVER_DIR, "dist", "index.js")
+REPO_URL = "https://github.com/ArtSabintsev/everquest1-mcp.git"
+
+# 1. Auto-bootstrap: If the repo doesn't exist locally, clone and build it automatically
+if not os.path.exists(MCP_SERVER_DIR):
+    print("EverQuest MCP server not found locally. Setting up from GitHub...")
+    try:
+        # Clone the repository
+        subprocess.run(["git", "clone", REPO_URL, MCP_SERVER_DIR], check=True)
+        
+        # Install dependencies and build (shell=True is required for npm on Windows)
+        print("Installing dependencies...")
+        subprocess.run(["npm", "install"], cwd=MCP_SERVER_DIR, shell=True, check=True)
+        
+        print("Building the MCP server...")
+        subprocess.run(["npm", "run", "build"], cwd=MCP_SERVER_DIR, shell=True, check=True)
+        print("MCP server setup complete!")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to automatically set up the MCP server: {e}")
+        sys.exit(1)
+
+current_env = os.environ.copy()
+current_env["EQ_GAME_PATH"] = r"C:\\Users\\Public\\Daybreak Game Company\\Installed Games\\EverQuest"
+
+server_params = StdioServerParameters(
+    command="node",
+    args=[INDEX_JS_PATH],
+    env=current_env
+)
+
 
 class aclient(discord.Client):
-  def __init__(self):
-    super().__init__(intents=discord.Intents.default())
+  def __init__(self, *args, **kwargs):
+    super().__init__(intents=discord.Intents.default(), *args, **kwargs)
     self.synced = False
     self.intents.message_content = True
+    self.mcp_ctx = None
+    self.mcp_session = None
+    self.session_cm = None
+    self.client_cm = None
 
+
+  async def setup_hook(self):
+      try:
+        # Start the Node.js MCP server ONCE when the bot starts
+        print("Starting persistent MCP server...")
+        self.client_cm = stdio_client(server_params)
+        read, write = await self.client_cm.__aenter__()
+
+        self.session_cm = ClientSession(read, write)
+        
+        self.mcp_session = await self.session_cm.__aenter__()
+        print("Initializing MCP session...")
+        await self.mcp_session.initialize()
+        print("MCP server connected and ready!")
+
+      except Exception as e:
+        print(f"CRITICAL ERROR starting MCP server: {e}")
+        # Optional: print full traceback to debug outside of debug mode
+        #import traceback
+        #traceback.print_exc()
 
   async def on_ready(self):
     await self.wait_until_ready()
@@ -56,38 +117,45 @@ class aclient(discord.Client):
       #global bidCommand
       auctions = {}
       
+
     print(f"I have logged in as {self.user}.")
+
+  async def close(self):
+     # Cleanly shut down the Node process when the bot stops
+     if self.client_cm:
+        await self.client_cm.__aexit__(None, None, None)
+     await super().close()
+
 
 client = aclient()
 tree = app_commands.CommandTree(client)
 CLEANR = re.compile('<.*?>')
 
-#MCP Client Setup
-MCP_SERVER_DIR = r"C:\Users\stare\source\repos\Sloan-James\Bid-Bot\MCP"
-INDEX_JS_PATH = os.path.join(MCP_SERVER_DIR, "dist", "index.js")
 
-current_env = os.environ.copy()
-
-current_env["EQ_GAME_PATH"] = r"C:\\Users\\Public\\Daybreak Game Company\\Installed Games\\EverQuest"
-
-server_params = StdioServerParameters(
-    command="node",
-    args=[INDEX_JS_PATH],
-    env=current_env
-)
 
 async def item_autocomplete(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
     # Implementation for item autocomplete
     if len(current) < 3:
         return []
-    
+
+    bot = interaction.client
+
+    if not hasattr(bot, "mcp_session") or not bot.mcp_session:
+        print("MCP session is not initialized.")
+        return []
+
+
     try: 
-        async with stdio_client(server_params) as (read_stream, write_stream):
+        #async with stdio_client(server_params) as (read_stream, write_stream):
 
-            async with ClientSession(read_stream, write_stream) as session:
-                await session.initialize()
+            #async with ClientSession(read_stream, write_stream) as session:
+                #await session.initialize()
+                
 
-                response = await session.call_tool(
+
+                #response = await session.call_tool(
+                response = await bot.mcp_session.call_tool(
+                
                     "search_items",
                     arguments={"query": current}
                 )
@@ -370,12 +438,13 @@ async def listauctions(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     global auctions
+    active = ""
 
     if auctions == {}:
        await interaction.followup.send("There are no active Auctions", ephemeral=True)
     else:
        for BidID in auctions:
-         active = auctions.get(BidID).itemName + " : " + BidID + "\n"
+         active = active + auctions.get(BidID).itemName + " : " + BidID + "\n"
        await interaction.followup.send(active, ephemeral=True)
 
 
@@ -486,18 +555,26 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
               itemName = thing.find('table', {"class" : "shottopbg"})
               if itemName != None:
                   EQicon = None
+                  
                   itemName = itemName.get_text()
                   itemName = itemName.strip()
+             
+                  txt = thing.find('table', {"class" : 'eqitem'})
                   if txt:
-                     txt = thing.find('table', {"class" : 'eqitem'})
                      itemStats = txt.get_text()
                      auctions.get(z).itemStats = itemStats
                      txt = thing.find('img', {"align": "absmiddle"})
                      if txt:
                         EQicon = txt.get('src')
                         auctions.get(z).EQicon = EQicon
+                  else:
+                      auctions.get(z).itemStats = ''
+                      auctions.get(z).EQicon = None
               else:
                   itemName = display_name
+      else:
+          auctions.get(z).itemStats = ''
+          auctions.get(z).EQicon = None
   
   '''price_data = await get_avg_price(itemName)
   plat_price = None
@@ -593,18 +670,19 @@ async def startauction(interaction: discord.Interaction, item: str, timer: int =
   description = "Cancel an Auction"
 )
 @discord.app_commands.checks.has_role("Officer")
-async def cancel(interaction: discord.Interaction, id:str):
+async def cancel(interaction: discord.Interaction, bidid:str):
   await interaction.response.defer(ephemeral=True)
   #await asyncio.sleep(4)
 
   channel = interaction.channel
-  message = await channel.fetch_message(auctions[id].message)
-  if message is not None:
-     await message.edit(content="**" + auctions[id].itemName + "** auction has been canceled.", embed = None, view = None)
+  if auction[bidid].message:
+     message = await channel.fetch_message(auctions[bidid].message)
+     if message is not None:
+        await message.edit(content="**" + auctions[bidid].itemName + "** auction has been canceled.", embed = None, view = None)
   
-  await interaction.followup.send("**" + auctions[id].itemName + "** has been canceled")
+  await interaction.followup.send("**" + auctions[bidid].itemName + "** has been canceled")
 
-  del auctions[id]
+  del auctions[bidid]
   
 
 #Ending Auctions
@@ -621,7 +699,7 @@ async def endauctions(interaction: discord.Interaction):
   if auctions == {}:
     await interaction.response.send_message("There are no active Auctions")
   else:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     #await asyncio.sleep(4)
 
     #winners = []
@@ -629,24 +707,35 @@ async def endauctions(interaction: discord.Interaction):
       try:
         await i.theView.disableButton(i.message, interaction)
       except:
-        continue
+        print("Error disabling button for auction end.")
+        pass
 
-    for i in auctions.values():
+    #for bid_id in auctions:
+    while auctions:
       
-      #key = next(k for k, v in auctions.items() if v == i)
-      
-      
-      noBids, winnerAnnounceInteraction, dataInteraction, winner, winnerInteraction = end_auction(i)
+      #bid_id = next(k for k, v in auctions.items() if v == i)
+      bid_id = next(iter(auctions))
+      itemName = auctions.get(bid_id).itemName
+      link = auctions.get(bid_id).link
+      #itemStats= ''
+      itemStats = auctions.get(bid_id).itemStats
+
+      EQicon = None
+      if auctions.get(bid_id).EQicon:
+        EQicon = auctions.get(bid_id).EQicon
+      message_id = auctions.get(bid_id).message
+
+      noBids, winnerAnnounceInteraction, dataInteraction, winner, winnerInteraction = end_auction(bid_id)
        
       if noBids == None:
             #await interaction.followup.send(winnerAnnounceInteraction)
-            embed = discord.Embed(title = "**" + auctions.get(i).itemName + "**", url=auctions.get(i).link, description = auctions.get(i).itemStats + "\n\n**BidBot Item ID: " + i + "**\n\n" + winnerAnnounceInteraction + "\n")
-            if auctions.get(i).EQicon:
-                embed.set_thumbnail(url=auctions.get(i).EQicon)
+            new_embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + bid_id + "**\n\n" + winnerAnnounceInteraction + "\n")
+            if EQicon:
+                new_embed.set_thumbnail(url=EQicon)
             try:
-                channel = interaction.channel_id
-                message = await channel.fetch_message(auctions.get(i).message)
-                await message.edit(content=winnerAnnounceInteraction, embed = embed, view = None)
+                channel = interaction.channel
+                message = await channel.fetch_message(message_id)
+                await message.edit(content=winnerAnnounceInteraction, embed = new_embed, view = None)
             except discord.NotFound:
                 interaction.user.send("Message could not be found in order to edit.")
                 pass
@@ -659,26 +748,30 @@ async def endauctions(interaction: discord.Interaction):
             try:
                 await user.send(winnerInteraction) 
             except discord.Forbidden:
+                print("Error sending winnerInteraction to user.")
                 pass
 
       else:
             #await interaction.followup.send(noBids)
             #embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + z + "**\n\n" + noBids + "\n")
              
-            embed = discord.Embed(title = "**" + auctions.get(i).itemName + "**", url=auctions.get(i).link, description = auctions.get(i).itemStats + "\n\n**BidBot Item ID: " + i + "**\n\n" + noBids + "\n")
+            new_embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + bid_id + "**\n\n" + noBids + "\n")
 
-            if auctions.get(i).EQicon:
-                embed.set_thumbnail(url=auctions.get(i).EQicon)
+            if EQicon:
+                new_embed.set_thumbnail(url=EQicon)
             try:
-               channel = interaction.channel_id
-               message = await channel.fetch_message(auctions.get(i).message)
-               await message.edit(content=noBids, embed = embed, view = None)
+               channel = interaction.channel
+               message = await channel.fetch_message(message_id)
+               await message.edit(content=noBids, embed = new_embed, view = None)
             except discord.NotFound:
                 interaction.user.send("Message could not be found in order to edit.")
                 pass
+            except:
+                print("Error editing message for auction end.")
+                pass
 
-    
-  auctions = {}
+  await interaction.followup.send("All auctions have been ended", ephemeral=True)  
+  #auctions = {}
 
 #Search winners by Bid_id      
 @tree.command(
@@ -731,82 +824,75 @@ async def searchitem(interaction: discord.Interaction, itemname:str):
   description = "End Auction on an item with id"
 )
 @discord.app_commands.checks.has_role("Officer")
-async def endauction(interaction: discord.Interaction, id:str):
+async def endauction(interaction: discord.Interaction, bid_id:str):
 
   global auctions
 
   currentTopBid = 0        
 
-  if id not in auctions:
+  if bid_id not in auctions:
     await interaction.response.send_message("There are no active Auction with that ID")
   else:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral=True)
     #await asyncio.sleep(2)         
     
-    await auctions[id].theView.disableButton(auctions[id].message, interaction)
+    await auctions[bid_id].theView.disableButton(auctions[bid_id].message, interaction)
 
-    currentTopBid = 0
-    highestBid = 0
-    count = 0
-    prevHighest = 0
-    prevBid = 0
+    itemName = auctions.get(bid_id).itemName
+    link = auctions.get(bid_id).link
+    itemStats = auctions.get(bid_id).itemStats
+    EQicon = None
+    if auctions.get(bid_id).EQicon:
+        EQicon = auctions.get(bid_id).EQicon
+    message_id = auctions.get(bid_id).message
+
+    noBids, winnerAnnounceInteraction, dataInteraction, winner, winnerInteraction = end_auction(bid_id)
+
     
-    if auctions[id].itemBids != []:
-      for l in auctions[id].itemBids:
-        if l > highestBid:
-          prevHighest = highestBid
-          highestBid = l
-          currentTopBid = count
-          
-        else:
-          prevBid = prevHighest
-          if (l > prevBid):
-            prevHighest = l
+    if noBids == None:
             
-        count = count + 1  
-      await interaction.followup.send("**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid]  + "** for **{:,}** platinum".format(prevHighest + 1))
-  
+      new_embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + bid_id + "**\n\n" + winnerAnnounceInteraction + "\n")
+      if EQicon:
+        new_embed.set_thumbnail(url=EQicon)
       try:
-        await interaction.user.send('**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids) + '\nWinnner:\n' + auctions[id].itemName + '\n' + auctions[id].itemBidders[currentTopBid] + '\n{:,}'.format(prevHighest +1))
+        channel = interaction.channel
+        message = await channel.fetch_message(message_id)
+        await message.edit(content=winnerAnnounceInteraction, embed = new_embed, view = None)
+      except discord.NotFound:
+        interaction.user.send("Message could not be found in order to edit.")
+        pass
+      try:
+        await interaction.user.send(dataInteraction)
       except discord.Forbidden:
         pass
 
-      user = await client.fetch_user(auctions[id].BidderID[currentTopBid])
+      user = await client.fetch_user(winner)
       try:
-        await user.send("You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)) 
+        await user.send(winnerInteraction) 
       except discord.Forbidden:
+        print("Error sending winnerInteraction to user.")
         pass
 
     else:
-      await interaction.followup.send("No one bid on " + auctions[id].itemName + ".")
-  
-    connection = sqlite3.connect("database.db")
-    cursor = connection.cursor()
-    today = date.today().strftime('%Y-%m-%d')
-    key = id
+      #await interaction.followup.send(noBids)
+      #embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + z + "**\n\n" + noBids + "\n")
+             
+      embed = discord.Embed(title = "**" + itemName + "**", url=link, description = itemStats + "\n\n**BidBot Item ID: " + bid_id + "**\n\n" + noBids + "\n")
 
-    cursor.execute("""INSERT INTO auctions ('id', 'seq_id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
-        VALUES (?,(SELECT COALESCE(MAX(seq_id), 0) + 1 FROM auctions WHERE id = ?), ?, ?, ?, ?) RETURNING seq_id""", (key, key, today, auctions[id].itemName, auctions[id].itemBidders[currentTopBid], prevHighest + 1))
+      if EQicon:
+        embed.set_thumbnail(url=EQicon)
+      try:
+        channel = interaction.channel
+        message = await channel.fetch_message(message)
+        await message.edit(content=noBids, embed = embed, view = None)
+      except discord.NotFound:
+        interaction.user.send("Message could not be found in order to edit.")
+        pass
+      except:
+        print("Error editing message for auction end.")
+        pass
 
-    comb = list(zip(auctions[id].itemBidders, auctions[id].itemBids))
-    data = []
-    row = cursor.fetchone()
-    if row:
-        generated_seq_id = row[0]
-    else: 
-        cursor.execute("SELECT MAX(seq_id) FROM auctions WHERE id = ?", (key,))
-        generated_seq_id = cursor.fetchone()[0]
-
-    for item in comb:
-        data.append((key,generated_seq_id) + item)
-
-    cursor.executemany("""INSERT INTO bids ('auction_id', 'bidder_name', 'bid_amount')
-        VALUES (?, ?, ?)""", (data))
-
-    connection.commit()
-    connection.close()
-
-    del auctions[id]
+  await interaction.followup.send(f"Auction {bid_id} has been ended", ephemeral=True) 
 
 '''     Unused/Not necessary for Bid Bot 
 #Item Lookup
@@ -888,7 +974,7 @@ async def sync(interaction: discord.Interaction):
 
 
 
-def end_auction(id):
+def end_auction(bid_id):
     global auctions
 
     currentTopBid = 0
@@ -898,8 +984,10 @@ def end_auction(id):
     prevBid = 0
     noBids = None
     
-    if auctions[id].itemBids != []:
-      for l in auctions[id].itemBids:
+    
+
+    if auctions[bid_id].itemBids != []:
+      for l in auctions[bid_id].itemBids:
         if l > highestBid:
           prevHighest = highestBid
           highestBid = l
@@ -912,21 +1000,21 @@ def end_auction(id):
             
         count = count + 1  
 
-      winnerAnnounceInteraction = "**" + auctions[id].itemName + "** won by **" + auctions[id].itemBidders[currentTopBid]  + "** for **{:,}** platinum".format(prevHighest + 1)
-      dataInteraction = '**' + auctions[id].itemName + ':**\n' + str(auctions[id].BidderID) + '\n' + str(auctions[id].itemBidders) + '\n' + str(auctions[id].itemBids) + '\nWinnner:\n' + auctions[id].itemName + '\n' + auctions[id].itemBidders[currentTopBid] + '\n{:,}'.format(prevHighest +1)
+      winnerAnnounceInteraction = "**" + auctions[bid_id].itemName + "** won by **" + auctions[bid_id].itemBidders[currentTopBid]  + "** for **{:,}** platinum".format(prevHighest + 1)
+      dataInteraction = '**' + auctions[bid_id].itemName + ':**\n' + str(auctions[bid_id].BidderID) + '\n' + str(auctions[bid_id].itemBidders) + '\n' + str(auctions[bid_id].itemBids) + '\nWinnner:\n' + auctions[bid_id].itemName + '\n' + auctions[bid_id].itemBidders[currentTopBid] + '\n{:,}'.format(prevHighest +1)
     
 
-      winner = auctions[id].BidderID[currentTopBid]
-      winnerInteraction = "You won **" + auctions[id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)
+      winner = auctions[bid_id].BidderID[currentTopBid]
+      winnerInteraction = "You won **" + auctions[bid_id].itemName + "** for **{:,}** platinum".format(prevHighest + 1)
       connection = sqlite3.connect("database.db")
       cursor = connection.cursor()
       today = date.today().strftime('%Y-%m-%d')
 
-      key = id
+      key = bid_id
       cursor.execute("""INSERT INTO auctions ('id', 'seq_id', 'auction_date', 'item_name', 'winner_name', 'winning_price')
-        VALUES (?,(SELECT COALESCE(MAX(seq_id), 0) + 1 FROM auctions WHERE id = ?), ?, ?, ?, ?) RETURNING seq_id""", (key, key, today, auctions[id].itemName, auctions[id].itemBidders[currentTopBid], prevHighest + 1))
+        VALUES (?,(SELECT COALESCE(MAX(seq_id), 0) + 1 FROM auctions WHERE id = ?), ?, ?, ?, ?) RETURNING seq_id""", (key, key, today, auctions[bid_id].itemName, auctions[bid_id].itemBidders[currentTopBid], prevHighest + 1))
 
-      comb = list(zip(auctions[id].itemBidders, auctions[id].itemBids))
+      comb = list(zip(auctions[bid_id].itemBidders, auctions[bid_id].itemBids))
       data = []
       row = cursor.fetchone()
       if row:
@@ -944,11 +1032,11 @@ def end_auction(id):
       connection.commit()
       connection.close()
     else: 
-      noBids = "No one bid on " + auctions[id].itemName + "."
+      noBids = "No one bid on " + auctions[bid_id].itemName + "."
   
     
 
-    del auctions[id]
+    del auctions[bid_id]
 
     if noBids == None:
         return None, winnerAnnounceInteraction, dataInteraction, winner, winnerInteraction
